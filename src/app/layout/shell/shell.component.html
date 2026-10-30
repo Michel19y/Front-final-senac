@@ -1,0 +1,23 @@
+<div class="shell">
+  <aside class="barra-lateral">
+    <h1 class="logo">Spotifei <span>Família</span></h1>
+
+    <nav>
+      <a routerLink="/musicas" routerLinkActive="ativo">Músicas</a>
+      <a routerLink="/playlists" routerLinkActive="ativo">Playlists</a>
+      <a routerLink="/familia" routerLinkActive="ativo">Família</a>
+    </nav>
+
+    <div class="usuario">
+      @if (usuario(); as u) {
+        <p class="nome">{{ u.nomeUsuario }}</p>
+        <p class="email">{{ u.email }}</p>
+      }
+      <button type="button" class="botao-sair" (click)="sair()">Sair</button>
+    </div>
+  </aside>
+
+  <main class="conteudo">
+    <router-outlet />
+  </main>
+</div>

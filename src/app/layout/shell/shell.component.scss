@@ -1,0 +1,74 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.barra-lateral {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--cor-superficie);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.logo {
+  font-size: 1.1rem;
+  margin: 0;
+
+  span {
+    color: var(--cor-destaque);
+  }
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+
+  a {
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    color: var(--cor-texto-suave);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      background: var(--cor-superficie-hover);
+      color: var(--cor-texto);
+    }
+
+    &.ativo {
+      background: var(--cor-superficie-hover);
+      color: var(--cor-texto);
+    }
+  }
+}
+
+.usuario {
+  border-top: 1px solid var(--cor-borda);
+  padding-top: 1rem;
+
+  .nome {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .email {
+    margin: 0 0 0.75rem;
+    font-size: 0.8rem;
+    color: var(--cor-texto-suave);
+  }
+}
+
+.botao-sair {
+  width: 100%;
+}
+
+.conteudo {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}

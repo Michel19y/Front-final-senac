@@ -1,0 +1,57 @@
+<div class="pagina-auth">
+  @if (!resultado()) {
+    <form class="cartao formulario" (ngSubmit)="cadastrar()">
+      <h2>Criar conta no Spotifei</h2>
+
+      <div class="campo">
+        <label for="nome">Nome</label>
+        <input id="nome" name="nome" type="text" required [(ngModel)]="nome" />
+      </div>
+
+      <div class="campo">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" required [(ngModel)]="email" />
+      </div>
+
+      <div class="campo">
+        <label for="cpf">CPF</label>
+        <input id="cpf" name="cpf" type="text" required [(ngModel)]="cpf" />
+      </div>
+
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" required [(ngModel)]="senha" autocomplete="new-password" />
+      </div>
+
+      <div class="campo">
+        <label for="plano">Plano</label>
+        <select id="plano" name="plano" [(ngModel)]="plano">
+          <option value="BASICO">Básico</option>
+          <option value="PADRAO">Padrão</option>
+          <option value="PREMIUM">Premium</option>
+        </select>
+      </div>
+
+      @if (erro(); as mensagem) {
+        <p class="erro">{{ mensagem }}</p>
+      }
+
+      <button type="submit" [disabled]="carregando()">{{ carregando() ? 'Cadastrando...' : 'Cadastrar' }}</button>
+
+      <p class="rodape">Já tem conta? <a routerLink="/login">Entrar</a></p>
+    </form>
+  }
+
+  @if (resultado(); as resposta) {
+    <div class="cartao formulario">
+      <h2>Cadastro realizado</h2>
+      <p>{{ resposta.mensagem }}</p>
+      <img class="qrcode" [src]="'data:image/png;base64,' + resposta.qrCodeBase64" alt="QR code do autenticador" />
+      <div class="campo">
+        <label>Chave manual</label>
+        <input type="text" readonly [value]="resposta.totpSecret" />
+      </div>
+      <a routerLink="/login"><button type="button">Ir para o login</button></a>
+    </div>
+  }
+</div>

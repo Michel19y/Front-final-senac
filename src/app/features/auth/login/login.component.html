@@ -1,0 +1,43 @@
+<div class="pagina-auth">
+  @if (!configuracao2fa()) {
+    <form class="cartao formulario" (ngSubmit)="entrar()">
+      <h2>Entrar no Spotifei</h2>
+
+      <div class="campo">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" required [(ngModel)]="email" autocomplete="username" />
+      </div>
+
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" required [(ngModel)]="senha" autocomplete="current-password" />
+      </div>
+
+      <div class="campo">
+        <label for="codigo2fa">Código do autenticador (se já configurado)</label>
+        <input id="codigo2fa" name="codigo2fa" type="text" maxlength="6" [(ngModel)]="codigo2fa" placeholder="000000" />
+      </div>
+
+      @if (erro(); as mensagem) {
+        <p class="erro">{{ mensagem }}</p>
+      }
+
+      <button type="submit" [disabled]="carregando()">{{ carregando() ? 'Entrando...' : 'Entrar' }}</button>
+
+      <p class="rodape">Ainda não tem conta? <a routerLink="/cadastro">Cadastre-se</a></p>
+    </form>
+  }
+
+  @if (configuracao2fa(); as config) {
+    <div class="cartao formulario">
+      <h2>Configure o autenticador</h2>
+      <p>{{ config.mensagem }}</p>
+      <img class="qrcode" [src]="'data:image/png;base64,' + config.qrCodeBase64" alt="QR code do autenticador" />
+      <div class="campo">
+        <label>Chave manual</label>
+        <input type="text" readonly [value]="config.totpSecret" />
+      </div>
+      <button type="button" class="secundario" (click)="configuracao2fa.set(null)">Já configurei, voltar ao login</button>
+    </div>
+  }
+</div>

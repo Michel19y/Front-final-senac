@@ -1,1 +1,134 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --cor-fundo: #121212;
+  --cor-superficie: #181818;
+  --cor-superficie-hover: #282828;
+  --cor-borda: #2a2a2a;
+  --cor-texto: #ffffff;
+  --cor-texto-suave: #b3b3b3;
+  --cor-destaque: #1db954;
+  --cor-destaque-hover: #1ed760;
+  --cor-erro: #f15e6c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.25rem;
+  background: var(--cor-destaque);
+  color: #000;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--cor-destaque-hover);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+button.secundario {
+  background: transparent;
+  color: var(--cor-texto);
+  border: 1px solid var(--cor-borda);
+
+  &:hover:not(:disabled) {
+    background: var(--cor-superficie-hover);
+  }
+}
+
+button.perigo {
+  background: var(--cor-erro);
+  color: #fff;
+}
+
+input,
+select {
+  background: var(--cor-superficie-hover);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto);
+  border-radius: 4px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+
+  &:focus {
+    outline: 2px solid var(--cor-destaque);
+  }
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+
+  label {
+    font-size: 0.85rem;
+    color: var(--cor-texto-suave);
+  }
+}
+
+.cartao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.erro {
+  color: var(--cor-erro);
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.sucesso {
+  color: var(--cor-destaque);
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--cor-borda);
+  }
+
+  th {
+    color: var(--cor-texto-suave);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+  }
+}

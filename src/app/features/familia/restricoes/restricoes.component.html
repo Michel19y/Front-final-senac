@@ -1,0 +1,53 @@
+<a class="voltar" routerLink="/familia">&larr; Voltar para a família</a>
+
+<h2>Controle parental</h2>
+
+@if (erro(); as msg) {
+  <p class="erro">{{ msg }}</p>
+}
+
+<div class="cartao secao">
+  <h3>Conteúdo explícito</h3>
+  <p>Status atual: <strong>{{ explicitoBloqueado() ? 'Bloqueado' : 'Permitido' }}</strong></p>
+  <button type="button" [class.perigo]="!explicitoBloqueado()" (click)="alternarExplicito()">
+    {{ explicitoBloqueado() ? 'Permitir conteúdo explícito' : 'Bloquear conteúdo explícito' }}
+  </button>
+</div>
+
+<div class="cartao secao">
+  <h3>Limite diário de reproduções</h3>
+  @if (limite(); as l) {
+    <p>Reproduzidas hoje: {{ l.reproduzidasHoje }}</p>
+  }
+  <div class="linha">
+    <input type="number" min="0" placeholder="Sem limite" [(ngModel)]="novoLimite" />
+    <button type="button" (click)="salvarLimite()">Salvar limite</button>
+  </div>
+</div>
+
+<div class="cartao secao">
+  <h3>Artistas bloqueados</h3>
+  <div class="linha">
+    <input type="number" placeholder="ID do artista" [(ngModel)]="novoArtistaId" />
+    <button type="button" (click)="bloquearArtista()">Bloquear artista</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Artista</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (restricao of artistasBloqueados(); track restricao.id) {
+        <tr>
+          <td>{{ restricao.nomeArtista ?? restricao.artistaId }}</td>
+          <td><button type="button" class="secundario" (click)="desbloquearArtista(restricao)">Desbloquear</button></td>
+        </tr>
+      } @empty {
+        <tr><td colspan="2">Nenhum artista bloqueado.</td></tr>
+      }
+    </tbody>
+  </table>
+</div>

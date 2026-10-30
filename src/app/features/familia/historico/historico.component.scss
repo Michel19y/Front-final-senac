@@ -1,0 +1,10 @@
+.voltar {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: var(--cor-texto-suave);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--cor-texto);
+  }
+}

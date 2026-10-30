@@ -1,0 +1,49 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.pagina-auth {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+
+  h2 {
+    margin-top: 0;
+  }
+
+  button {
+    margin-top: 0.5rem;
+  }
+}
+
+.rodape {
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+  text-align: center;
+
+  a {
+    color: var(--cor-destaque);
+  }
+}
+
+.qrcode {
+  display: block;
+  width: 200px;
+  height: 200px;
+  margin: 1rem auto;
+  background: #fff;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
