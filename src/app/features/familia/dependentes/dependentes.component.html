@@ -5,39 +5,47 @@
   <div class="linha">
     <div class="campo">
       <label for="nome">Nome</label>
-      <input id="nome" name="nome" type="text" [(ngModel)]="nome" />
+      <input id="nome" name="nome" type="text" [(ngModel)]="nome" [disabled]="salvando()" />
     </div>
     <div class="campo">
       <label for="email">E-mail</label>
-      <input id="email" name="email" type="email" [(ngModel)]="email" />
+      <input id="email" name="email" type="email" [(ngModel)]="email" [disabled]="salvando()" />
     </div>
     <div class="campo">
       <label for="senha">Senha</label>
-      <input id="senha" name="senha" type="password" [(ngModel)]="senha" />
+      <input id="senha" name="senha" [type]="mostrarSenha() ? 'text' : 'password'" [(ngModel)]="senha" [disabled]="salvando()" />
+      <label class="mostrar-senha">
+        <input type="checkbox" [checked]="mostrarSenha()" (change)="mostrarSenha.set(!mostrarSenha())" />
+        Mostrar senha
+      </label>
     </div>
   </div>
-  <button type="button" (click)="adicionar()">Adicionar à família</button>
+  <button type="button" (click)="adicionar()" [disabled]="salvando()">{{ salvando() ? 'Adicionando...' : 'Adicionar à família' }}</button>
 </div>
 
 @if (erro(); as msg) {
   <p class="erro">{{ msg }}</p>
 }
 
-<div class="grade">
-  @for (dependente of dependentes(); track dependente.id) {
-    <div class="cartao membro">
-      <h3>{{ dependente.nomeUsuario }}</h3>
-      <p>{{ dependente.email }}</p>
-      @if (dependente.limiteDiarioReproducoes; as limite) {
-        <p class="limite">Limite diário: {{ limite }}</p>
-      }
-      <div class="acoes">
-        <a [routerLink]="['/familia', dependente.id, 'historico']"><button type="button" class="secundario">Histórico</button></a>
-        <a [routerLink]="['/familia', dependente.id, 'restricoes']"><button type="button" class="secundario">Restrições</button></a>
-        <button type="button" class="perigo" (click)="remover(dependente)">Remover</button>
+@if (carregando()) {
+  <p>Carregando membros da família...</p>
+} @else {
+  <div class="grade">
+    @for (dependente of dependentes(); track dependente.id) {
+      <div class="cartao membro">
+        <h3>{{ dependente.nomeUsuario }}</h3>
+        <p>{{ dependente.email }}</p>
+        @if (dependente.limiteDiarioReproducoes; as limite) {
+          <p class="limite">Limite diário: {{ limite }}</p>
+        }
+        <div class="acoes">
+          <a [routerLink]="['/familia', dependente.id, 'historico']"><button type="button" class="secundario">Histórico</button></a>
+          <a [routerLink]="['/familia', dependente.id, 'restricoes']"><button type="button" class="secundario">Restrições</button></a>
+          <button type="button" class="perigo" (click)="remover(dependente)">Remover</button>
+        </div>
       </div>
-    </div>
-  } @empty {
-    <p>Nenhum membro cadastrado ainda.</p>
-  }
-</div>
+    } @empty {
+      <p>Nenhum membro cadastrado ainda.</p>
+    }
+  </div>
+}

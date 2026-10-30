@@ -6,48 +6,69 @@
   <p class="erro">{{ msg }}</p>
 }
 
-<div class="cartao secao">
-  <h3>Conteúdo explícito</h3>
-  <p>Status atual: <strong>{{ explicitoBloqueado() ? 'Bloqueado' : 'Permitido' }}</strong></p>
-  <button type="button" [class.perigo]="!explicitoBloqueado()" (click)="alternarExplicito()">
-    {{ explicitoBloqueado() ? 'Permitir conteúdo explícito' : 'Bloquear conteúdo explícito' }}
-  </button>
-</div>
-
-<div class="cartao secao">
-  <h3>Limite diário de reproduções</h3>
-  @if (limite(); as l) {
-    <p>Reproduzidas hoje: {{ l.reproduzidasHoje }}</p>
-  }
-  <div class="linha">
-    <input type="number" min="0" placeholder="Sem limite" [(ngModel)]="novoLimite" />
-    <button type="button" (click)="salvarLimite()">Salvar limite</button>
-  </div>
-</div>
-
-<div class="cartao secao">
-  <h3>Artistas bloqueados</h3>
-  <div class="linha">
-    <input type="number" placeholder="ID do artista" [(ngModel)]="novoArtistaId" />
-    <button type="button" (click)="bloquearArtista()">Bloquear artista</button>
+@if (carregando()) {
+  <p>Carregando restrições...</p>
+} @else {
+  <div class="cartao secao">
+    <h3>Conteúdo explícito</h3>
+    <p>Status atual: <strong>{{ explicitoBloqueado() ? 'Bloqueado' : 'Permitido' }}</strong></p>
+    <button type="button" [class.perigo]="!explicitoBloqueado()" [disabled]="salvandoExplicito()" (click)="alternarExplicito()">
+      {{ salvandoExplicito() ? 'Salvando...' : (explicitoBloqueado() ? 'Permitir conteúdo explícito' : 'Bloquear conteúdo explícito') }}
+    </button>
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Artista</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (restricao of artistasBloqueados(); track restricao.id) {
+  <div class="cartao secao">
+    <h3>Limite diário de reproduções</h3>
+    @if (limite(); as l) {
+      <p>Reproduzidas hoje: {{ l.reproduzidasHoje }}</p>
+    }
+    <div class="linha">
+      <input type="number" min="0" placeholder="Sem limite" [(ngModel)]="novoLimite" [disabled]="salvandoLimite()" />
+      <button type="button" (click)="salvarLimite()" [disabled]="salvandoLimite()">{{ salvandoLimite() ? 'Salvando...' : 'Salvar limite' }}</button>
+    </div>
+  </div>
+
+  <div class="cartao secao">
+    <h3>Artistas bloqueados</h3>
+    <div class="linha">
+      <input type="text" placeholder="Nome do artista" [(ngModel)]="nomeArtistaBusca" (keyup.enter)="buscarArtistas()" [disabled]="buscandoArtistas()" />
+      <button type="button" (click)="buscarArtistas()" [disabled]="buscandoArtistas()">{{ buscandoArtistas() ? 'Buscando...' : 'Buscar artista' }}</button>
+    </div>
+
+    @if (resultadosArtistas().length) {
+      <ul class="resultados-busca">
+        @for (artista of resultadosArtistas(); track artista.id) {
+          <li>
+            <span>{{ artista.nomeArtista }}</span>
+            <button type="button" class="secundario" [disabled]="bloqueandoArtistaId() === artista.id" (click)="bloquearArtista(artista)">
+              {{ bloqueandoArtistaId() === artista.id ? 'Bloqueando...' : 'Bloquear' }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    <table>
+      <thead>
         <tr>
-          <td>{{ restricao.nomeArtista ?? restricao.artistaId }}</td>
-          <td><button type="button" class="secundario" (click)="desbloquearArtista(restricao)">Desbloquear</button></td>
+          <th>Artista</th>
+          <th></th>
         </tr>
-      } @empty {
-        <tr><td colspan="2">Nenhum artista bloqueado.</td></tr>
-      }
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        @for (restricao of artistasBloqueados(); track restricao.id) {
+          <tr>
+            <td>{{ restricao.nomeArtista ?? restricao.artistaId }}</td>
+            <td>
+              <button type="button" class="secundario" [disabled]="desbloqueandoArtistaId() === restricao.artistaId" (click)="desbloquearArtista(restricao)">
+                {{ desbloqueandoArtistaId() === restricao.artistaId ? 'Desbloqueando...' : 'Desbloquear' }}
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="2">Nenhum artista bloqueado.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

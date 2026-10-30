@@ -90,3 +90,8 @@ export interface LimiteDiario {
 export interface MensagemResponse {
   mensagem: string;
 }
+
+export interface ArtistaBusca {
+  id: number;
+  nomeArtista: string;
+}

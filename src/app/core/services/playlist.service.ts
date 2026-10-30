@@ -25,4 +25,12 @@ export class PlaylistService {
   adicionarMusica(playlistId: number, usuarioId: number, musicaId: number): Observable<MensagemResponse> {
     return this.http.post<MensagemResponse>(`${this.baseUrl}/${playlistId}/musicas`, { usuarioId, musicaId });
   }
+
+  removerMusica(usuarioId: number, playlistId: number, musicaId: number): Observable<MensagemResponse> {
+    return this.http.delete<MensagemResponse>(`${this.baseUrl}/${usuarioId}/${playlistId}/musicas/${musicaId}`);
+  }
+
+  renomear(playlistId: number, usuarioId: number, nome: string): Observable<MensagemResponse> {
+    return this.http.put<MensagemResponse>(`${this.baseUrl}/${playlistId}`, { usuarioId, nome });
+  }
 }

@@ -17,6 +17,20 @@
   }
 }
 
+.mostrar-senha {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+  cursor: pointer;
+  margin-top: 0.35rem;
+
+  input {
+    width: auto;
+  }
+}
+
 .grade {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

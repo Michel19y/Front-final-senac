@@ -27,3 +27,22 @@
     flex: 1;
   }
 }
+
+.resultados-busca {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    background: var(--cor-superficie-hover);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+  }
+}

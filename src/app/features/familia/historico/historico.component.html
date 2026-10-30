@@ -7,22 +7,26 @@
 }
 
 <div class="cartao">
-  <table>
-    <thead>
-      <tr>
-        <th>Data/Hora</th>
-        <th>Música</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (item of historico(); track item.dataHora + item.titulo) {
+  @if (carregando()) {
+    <p>Carregando histórico...</p>
+  } @else {
+    <table>
+      <thead>
         <tr>
-          <td>{{ item.dataHora | date: 'dd/MM/yyyy HH:mm' }}</td>
-          <td>{{ item.titulo }}</td>
+          <th>Data/Hora</th>
+          <th>Música</th>
         </tr>
-      } @empty {
-        <tr><td colspan="2">Nenhuma reprodução registrada.</td></tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (item of historico(); track item.dataHora + item.titulo) {
+          <tr>
+            <td>{{ item.dataHora | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ item.titulo }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="2">Nenhuma reprodução registrada.</td></tr>
+        }
+      </tbody>
+    </table>
+  }
 </div>

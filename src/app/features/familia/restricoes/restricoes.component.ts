@@ -1,9 +1,10 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { RestricaoService } from '../../../core/services/restricao.service';
-import { LimiteDiario, Restricao } from '../../../core/models/models';
+import { ArtistaBusca, LimiteDiario, Restricao } from '../../../core/models/models';
 
 @Component({
   selector: 'app-restricoes',
@@ -14,11 +15,20 @@ import { LimiteDiario, Restricao } from '../../../core/models/models';
 })
 export class RestricoesComponent implements OnInit {
   contaFilhaId = 0;
-  novoArtistaId: number | null = null;
+  nomeArtistaBusca = '';
   novoLimite: number | null = null;
 
   readonly restricoes = signal<Restricao[]>([]);
   readonly limite = signal<LimiteDiario | null>(null);
+  readonly resultadosArtistas = signal<ArtistaBusca[]>([]);
+
+  readonly carregando = signal(false);
+  readonly buscandoArtistas = signal(false);
+  readonly salvandoExplicito = signal(false);
+  readonly salvandoLimite = signal(false);
+  readonly bloqueandoArtistaId = signal<number | null>(null);
+  readonly desbloqueandoArtistaId = signal<number | null>(null);
+
   readonly erro = signal<string | null>(null);
 
   readonly explicitoBloqueado = computed(() => this.restricoes().some((r) => r.tipo === 'EXPLICITO_GERAL'));
@@ -35,15 +45,26 @@ export class RestricoesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.contaFilhaId = Number(this.route.snapshot.paramMap.get('contaFilhaId'));
-    this.carregar();
-    this.carregarLimite();
+    this.route.paramMap.subscribe((params) => {
+      this.contaFilhaId = Number(params.get('contaFilhaId'));
+      this.carregar();
+      this.carregarLimite();
+    });
   }
 
   carregar(): void {
+    this.erro.set(null);
+    this.carregando.set(true);
+
     this.restricaoService.listar(this.responsavelId, this.contaFilhaId).subscribe({
-      next: (restricoes) => this.restricoes.set(restricoes),
-      error: () => this.erro.set('Não foi possível carregar as restrições.')
+      next: (restricoes) => {
+        this.carregando.set(false);
+        this.restricoes.set(restricoes);
+      },
+      error: (erro: HttpErrorResponse) => {
+        this.carregando.set(false);
+        this.erro.set(erro.error?.erro ?? 'Não foi possível carregar as restrições.');
+      }
     });
   }
 
@@ -53,50 +74,114 @@ export class RestricoesComponent implements OnInit {
         this.limite.set(limite);
         this.novoLimite = limite.limiteDiario;
       },
-      error: () => this.erro.set('Não foi possível carregar o limite diário.')
+      error: (erro: HttpErrorResponse) => this.erro.set(erro.error?.erro ?? 'Não foi possível carregar o limite diário.')
     });
   }
 
-  bloquearArtista(): void {
-    if (!this.novoArtistaId) {
+  buscarArtistas(): void {
+    if (!this.nomeArtistaBusca.trim()) {
+      this.resultadosArtistas.set([]);
       return;
     }
 
-    this.restricaoService.bloquearArtista(this.responsavelId, this.contaFilhaId, this.novoArtistaId).subscribe({
+    this.erro.set(null);
+    this.buscandoArtistas.set(true);
+
+    this.restricaoService.buscarArtistas(this.nomeArtistaBusca).subscribe({
+      next: (artistas) => {
+        this.buscandoArtistas.set(false);
+        this.resultadosArtistas.set(artistas);
+      },
+      error: (erro: HttpErrorResponse) => {
+        this.buscandoArtistas.set(false);
+        this.erro.set(erro.error?.erro ?? 'Não foi possível buscar artistas.');
+      }
+    });
+  }
+
+  bloquearArtista(artista: ArtistaBusca): void {
+    if (this.bloqueandoArtistaId() !== null) {
+      return;
+    }
+
+    this.erro.set(null);
+    this.bloqueandoArtistaId.set(artista.id);
+
+    this.restricaoService.bloquearArtista(this.responsavelId, this.contaFilhaId, artista.id).subscribe({
       next: () => {
-        this.novoArtistaId = null;
+        this.bloqueandoArtistaId.set(null);
+        this.nomeArtistaBusca = '';
+        this.resultadosArtistas.set([]);
         this.carregar();
       },
-      error: (erro) => this.erro.set(erro.error?.erro ?? 'Não foi possível bloquear o artista.')
+      error: (erro: HttpErrorResponse) => {
+        this.bloqueandoArtistaId.set(null);
+        this.erro.set(erro.error?.erro ?? 'Não foi possível bloquear o artista.');
+      }
     });
   }
 
   desbloquearArtista(restricao: Restricao): void {
-    if (!restricao.artistaId) {
+    if (!restricao.artistaId || this.desbloqueandoArtistaId() !== null) {
       return;
     }
 
+    this.erro.set(null);
+    this.desbloqueandoArtistaId.set(restricao.artistaId);
+
     this.restricaoService.desbloquearArtista(this.responsavelId, this.contaFilhaId, restricao.artistaId).subscribe({
-      next: () => this.carregar(),
-      error: () => this.erro.set('Não foi possível desbloquear o artista.')
+      next: () => {
+        this.desbloqueandoArtistaId.set(null);
+        this.carregar();
+      },
+      error: (erro: HttpErrorResponse) => {
+        this.desbloqueandoArtistaId.set(null);
+        this.erro.set(erro.error?.erro ?? 'Não foi possível desbloquear o artista.');
+      }
     });
   }
 
   alternarExplicito(): void {
+    if (this.salvandoExplicito()) {
+      return;
+    }
+
+    this.erro.set(null);
+    this.salvandoExplicito.set(true);
+
     const acao = this.explicitoBloqueado()
       ? this.restricaoService.desbloquearExplicito(this.responsavelId, this.contaFilhaId)
       : this.restricaoService.bloquearExplicito(this.responsavelId, this.contaFilhaId);
 
     acao.subscribe({
-      next: () => this.carregar(),
-      error: () => this.erro.set('Não foi possível atualizar o bloqueio de conteúdo explícito.')
+      next: () => {
+        this.salvandoExplicito.set(false);
+        this.carregar();
+      },
+      error: (erro: HttpErrorResponse) => {
+        this.salvandoExplicito.set(false);
+        this.erro.set(erro.error?.erro ?? 'Não foi possível atualizar o bloqueio de conteúdo explícito.');
+      }
     });
   }
 
   salvarLimite(): void {
+    if (this.salvandoLimite()) {
+      return;
+    }
+
+    this.erro.set(null);
+    this.salvandoLimite.set(true);
+
     this.restricaoService.definirLimiteDiario(this.responsavelId, this.contaFilhaId, this.novoLimite).subscribe({
-      next: () => this.carregarLimite(),
-      error: () => this.erro.set('Não foi possível atualizar o limite diário.')
+      next: () => {
+        this.salvandoLimite.set(false);
+        this.carregarLimite();
+      },
+      error: (erro: HttpErrorResponse) => {
+        this.salvandoLimite.set(false);
+        this.erro.set(erro.error?.erro ?? 'Não foi possível atualizar o limite diário.');
+      }
     });
   }
 }

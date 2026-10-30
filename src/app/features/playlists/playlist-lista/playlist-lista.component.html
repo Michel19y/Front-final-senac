@@ -1,21 +1,25 @@
 <h2>Playlists</h2>
 
 <div class="criar">
-  <input type="text" placeholder="Nome da nova playlist" [(ngModel)]="novoNome" (keyup.enter)="criar()" />
-  <button type="button" (click)="criar()">Criar playlist</button>
+  <input type="text" placeholder="Nome da nova playlist" [(ngModel)]="novoNome" (keyup.enter)="criar()" [disabled]="salvando()" />
+  <button type="button" (click)="criar()" [disabled]="salvando()">{{ salvando() ? 'Criando...' : 'Criar playlist' }}</button>
 </div>
 
 @if (erro(); as msg) {
   <p class="erro">{{ msg }}</p>
 }
 
-<div class="grade">
-  @for (playlist of playlists(); track playlist.id) {
-    <a class="cartao playlist" [routerLink]="['/playlists', playlist.id]">
-      <h3>{{ playlist.nomePlaylist }}</h3>
-      <p>Ver músicas</p>
-    </a>
-  } @empty {
-    <p>Você ainda não tem playlists.</p>
-  }
-</div>
+@if (carregando()) {
+  <p>Carregando playlists...</p>
+} @else {
+  <div class="grade">
+    @for (playlist of playlists(); track playlist.id) {
+      <a class="cartao playlist" [routerLink]="['/playlists', playlist.id]">
+        <h3>{{ playlist.nomePlaylist }}</h3>
+        <p>Ver músicas</p>
+      </a>
+    } @empty {
+      <p>Você ainda não tem playlists.</p>
+    }
+  </div>
+}

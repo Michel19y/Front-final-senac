@@ -20,6 +20,7 @@ export class LoginComponent {
   readonly carregando = signal(false);
   readonly erro = signal<string | null>(null);
   readonly configuracao2fa = signal<LoginPrecisaConfigurar2fa | null>(null);
+  readonly mostrarSenha = signal(false);
 
   constructor(private readonly authService: AuthService, private readonly router: Router) {}
 

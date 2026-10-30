@@ -43,7 +43,37 @@ export class AuthService {
   }
 
   estaAutenticado(): boolean {
-    return !!this.obterToken();
+    const token = this.obterToken();
+
+    if (!token) {
+      return false;
+    }
+
+    if (this.tokenExpirado(token)) {
+      this.logout();
+      return false;
+    }
+
+    return true;
+  }
+
+  private tokenExpirado(token: string): boolean {
+    const partes = token.split('.');
+    if (partes.length !== 3) {
+      return true;
+    }
+
+    try {
+      let payloadBase64 = partes[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (payloadBase64.length % 4) {
+        payloadBase64 += '=';
+      }
+
+      const payload = JSON.parse(atob(payloadBase64));
+      return typeof payload.exp !== 'number' || Date.now() >= payload.exp * 1000;
+    } catch {
+      return true;
+    }
   }
 
   private salvarSessao(resposta: LoginSucesso): void {

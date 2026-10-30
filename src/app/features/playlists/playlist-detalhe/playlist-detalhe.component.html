@@ -1,35 +1,90 @@
 <a class="voltar" routerLink="/playlists">&larr; Voltar para playlists</a>
 
-<h2>Músicas da playlist</h2>
-
-<div class="adicionar">
-  <input type="number" placeholder="ID da música" [(ngModel)]="novaMusicaId" />
-  <button type="button" (click)="adicionar()">Adicionar música</button>
+<div class="titulo">
+  @if (!editandoNome()) {
+    <h2>{{ playlist()?.nomePlaylist ?? 'Músicas da playlist' }}</h2>
+    <button type="button" class="secundario" (click)="iniciarEdicaoNome()">Renomear</button>
+  } @else {
+    <input type="text" [(ngModel)]="nomeEditado" [disabled]="salvandoNome()" (keyup.enter)="salvarNome()" />
+    <button type="button" [disabled]="salvandoNome()" (click)="salvarNome()">{{ salvandoNome() ? 'Salvando...' : 'Salvar' }}</button>
+    <button type="button" class="secundario" [disabled]="salvandoNome()" (click)="cancelarEdicaoNome()">Cancelar</button>
+  }
 </div>
+
+@if (mensagem(); as msg) {
+  <p class="sucesso">{{ msg }}</p>
+}
 
 @if (erro(); as msg) {
   <p class="erro">{{ msg }}</p>
 }
 
 <div class="cartao">
-  <table>
-    <thead>
-      <tr>
-        <th>Id</th>
-        <th>Título</th>
-        <th>Explícito</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (musica of musicas(); track musica.id) {
+  @if (carregando()) {
+    <p>Carregando músicas...</p>
+  } @else {
+    <table>
+      <thead>
         <tr>
-          <td>{{ musica.id }}</td>
-          <td>{{ musica.titulo }}</td>
-          <td>{{ musica.explicito ? 'Sim' : 'Não' }}</td>
+          <th>Id</th>
+          <th>Título</th>
+          <th>Explícito</th>
+          <th></th>
         </tr>
-      } @empty {
-        <tr><td colspan="3">Esta playlist ainda não tem músicas.</td></tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (musica of musicas(); track musica.id) {
+          <tr>
+            <td>{{ musica.id }}</td>
+            <td>{{ musica.titulo }}</td>
+            <td>{{ musica.explicito ? 'Sim' : 'Não' }}</td>
+            <td class="acoes">
+              <button type="button" [disabled]="reproduzindoId() === musica.id" (click)="reproduzir(musica)">
+                {{ reproduzindoId() === musica.id ? 'Reproduzindo...' : 'Reproduzir' }}
+              </button>
+              <button type="button" class="perigo" [disabled]="removendoId() === musica.id" (click)="remover(musica)">
+                {{ removendoId() === musica.id ? 'Removendo...' : 'Remover' }}
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4">Esta playlist ainda não tem músicas.</td></tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+<div class="cartao adicionar-secao">
+  <h3>Adicionar música</h3>
+  <input type="text" placeholder="Filtrar por título..." [(ngModel)]="filtro" />
+
+  @if (carregandoCatalogo()) {
+    <p>Carregando catálogo...</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Explícito</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (musica of disponiveis(); track musica.id) {
+          <tr>
+            <td>{{ musica.titulo }}</td>
+            <td>{{ musica.explicito ? 'Sim' : 'Não' }}</td>
+            <td>
+              <button type="button" [disabled]="adicionandoId() === musica.id" (click)="adicionar(musica)">
+                {{ adicionandoId() === musica.id ? 'Adicionando...' : 'Escolher' }}
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="3">Nenhuma música disponível para adicionar.</td></tr>
+        }
+      </tbody>
+    </table>
+  }
 </div>

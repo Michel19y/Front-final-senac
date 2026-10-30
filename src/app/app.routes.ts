@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 import { LoginComponent } from './features/auth/login/login.component';
 import { CadastroComponent } from './features/auth/cadastro/cadastro.component';
 import { ShellComponent } from './layout/shell/shell.component';
@@ -11,8 +12,8 @@ import { HistoricoComponent } from './features/familia/historico/historico.compo
 import { RestricoesComponent } from './features/familia/restricoes/restricoes.component';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: 'cadastro', component: CadastroComponent },
+  { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
+  { path: 'cadastro', component: CadastroComponent, canActivate: [guestGuard] },
   {
     path: '',
     component: ShellComponent,

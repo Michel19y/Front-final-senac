@@ -22,6 +22,7 @@ export class CadastroComponent {
   readonly carregando = signal(false);
   readonly erro = signal<string | null>(null);
   readonly resultado = signal<CadastroResponse | null>(null);
+  readonly mostrarSenha = signal(false);
 
   constructor(private readonly authService: AuthService) {}
 

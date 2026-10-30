@@ -2,7 +2,10 @@
 
 <div class="busca">
   <input type="text" placeholder="Buscar por título..." [(ngModel)]="termo" (keyup.enter)="buscar()" />
-  <button type="button" (click)="buscar()">Buscar</button>
+  <button type="button" (click)="buscar()" [disabled]="carregando()">{{ carregando() ? 'Buscando...' : 'Buscar' }}</button>
+  @if (termoBuscado()) {
+    <button type="button" class="secundario" (click)="limparBusca()">Limpar</button>
+  }
 </div>
 
 @if (mensagem(); as msg) {
@@ -14,26 +17,38 @@
 }
 
 <div class="cartao">
-  <table>
-    <thead>
-      <tr>
-        <th>Id</th>
-        <th>Título</th>
-        <th>Explícito</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (musica of musicas(); track musica.id) {
+  @if (carregando()) {
+    <p>Carregando músicas...</p>
+  } @else {
+    <table>
+      <thead>
         <tr>
-          <td>{{ musica.id }}</td>
-          <td>{{ musica.titulo }}</td>
-          <td>{{ musica.explicito ? 'Sim' : 'Não' }}</td>
-          <td><button type="button" (click)="reproduzir(musica)">Reproduzir</button></td>
+          <th>Id</th>
+          <th>Título</th>
+          <th>Explícito</th>
+          <th></th>
         </tr>
-      } @empty {
-        <tr><td colspan="4">Nenhuma música encontrada.</td></tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (musica of musicas(); track musica.id) {
+          <tr>
+            <td>{{ musica.id }}</td>
+            <td>{{ musica.titulo }}</td>
+            <td>{{ musica.explicito ? 'Sim' : 'Não' }}</td>
+            <td>
+              <button type="button" [disabled]="processandoId() === musica.id" (click)="reproduzir(musica)">
+                {{ processandoId() === musica.id ? 'Reproduzindo...' : 'Reproduzir' }}
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4">
+              {{ termoBuscado() ? 'Nenhum resultado para "' + termoBuscado() + '".' : 'Nenhuma música encontrada.' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 </div>

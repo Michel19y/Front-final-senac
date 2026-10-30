@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { FamiliaService } from '../../../core/services/familia.service';
@@ -18,7 +19,10 @@ export class DependentesComponent implements OnInit {
   senha = '';
 
   readonly dependentes = signal<Dependente[]>([]);
+  readonly carregando = signal(false);
+  readonly salvando = signal(false);
   readonly erro = signal<string | null>(null);
+  readonly mostrarSenha = signal(false);
 
   private get responsavelId(): number {
     return this.authService.usuario()?.id ?? 0;
@@ -31,32 +35,55 @@ export class DependentesComponent implements OnInit {
   }
 
   carregar(): void {
+    this.erro.set(null);
+    this.carregando.set(true);
+
     this.familiaService.listarDependentes(this.responsavelId).subscribe({
-      next: (dependentes) => this.dependentes.set(dependentes),
-      error: () => this.erro.set('Não foi possível carregar os membros da família. Este recurso exige plano PREMIUM.')
+      next: (dependentes) => {
+        this.carregando.set(false);
+        this.dependentes.set(dependentes);
+      },
+      error: (erro: HttpErrorResponse) => {
+        this.carregando.set(false);
+        this.erro.set(erro.error?.erro ?? 'Não foi possível carregar os membros da família.');
+      }
     });
   }
 
   adicionar(): void {
-    if (!this.nome.trim() || !this.email.trim() || !this.senha.trim()) {
+    if (!this.nome.trim() || !this.email.trim() || !this.senha.trim() || this.salvando()) {
       return;
     }
 
+    this.erro.set(null);
+    this.salvando.set(true);
+
     this.familiaService.adicionarDependente(this.responsavelId, this.nome, this.email, this.senha).subscribe({
       next: () => {
+        this.salvando.set(false);
         this.nome = '';
         this.email = '';
         this.senha = '';
         this.carregar();
       },
-      error: (erro) => this.erro.set(erro.error?.erro ?? 'Não foi possível adicionar o membro.')
+      error: (erro: HttpErrorResponse) => {
+        this.salvando.set(false);
+        this.erro.set(erro.error?.erro ?? 'Não foi possível adicionar o membro.');
+      }
     });
   }
 
   remover(dependente: Dependente): void {
+    const confirmado = confirm(`Remover ${dependente.nomeUsuario} da família? Essa ação não pode ser desfeita.`);
+    if (!confirmado) {
+      return;
+    }
+
+    this.erro.set(null);
+
     this.familiaService.removerDependente(this.responsavelId, dependente.id).subscribe({
       next: () => this.carregar(),
-      error: (erro) => this.erro.set(erro.error?.erro ?? 'Não foi possível remover o membro.')
+      error: (erro: HttpErrorResponse) => this.erro.set(erro.error?.erro ?? 'Não foi possível remover o membro.')
     });
   }
 }

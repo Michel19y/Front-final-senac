@@ -15,12 +15,16 @@
 
       <div class="campo">
         <label for="cpf">CPF</label>
-        <input id="cpf" name="cpf" type="text" required [(ngModel)]="cpf" />
+        <input id="cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" required [(ngModel)]="cpf" />
       </div>
 
       <div class="campo">
         <label for="senha">Senha</label>
-        <input id="senha" name="senha" type="password" required [(ngModel)]="senha" autocomplete="new-password" />
+        <input id="senha" name="senha" [type]="mostrarSenha() ? 'text' : 'password'" required [(ngModel)]="senha" autocomplete="new-password" />
+        <label class="mostrar-senha">
+          <input type="checkbox" [checked]="mostrarSenha()" (change)="mostrarSenha.set(!mostrarSenha())" />
+          Mostrar senha
+        </label>
       </div>
 
       <div class="campo">
