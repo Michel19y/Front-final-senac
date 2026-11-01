@@ -1,12 +1,15 @@
-<a class="voltar" routerLink="/playlists">&larr; Voltar para playlists</a>
+<a class="voltar" routerLink="/playlists">Voltar para playlists</a>
 
 <div class="titulo">
   @if (!editandoNome()) {
     <h2>{{ playlist()?.nomePlaylist ?? 'Músicas da playlist' }}</h2>
     <button type="button" class="secundario" (click)="iniciarEdicaoNome()">Renomear</button>
   } @else {
-    <input type="text" [(ngModel)]="nomeEditado" [disabled]="salvandoNome()" (keyup.enter)="salvarNome()" />
-    <button type="button" [disabled]="salvandoNome()" (click)="salvarNome()">{{ salvandoNome() ? 'Salvando...' : 'Salvar' }}</button>
+    <input type="text" aria-label="Novo nome da playlist" [(ngModel)]="nomeEditado"
+           [disabled]="salvandoNome()" (keyup.enter)="salvarNome()" />
+    <button type="button" class="estavel" [disabled]="salvandoNome()" (click)="salvarNome()">
+      {{ salvandoNome() ? 'Salvando...' : 'Salvar' }}
+    </button>
     <button type="button" class="secundario" [disabled]="salvandoNome()" (click)="cancelarEdicaoNome()">Cancelar</button>
   }
 </div>
@@ -19,72 +22,137 @@
   <p class="erro">{{ msg }}</p>
 }
 
-<div class="cartao">
-  @if (carregando()) {
-    <p>Carregando músicas...</p>
-  } @else {
-    <table>
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Título</th>
-          <th>Explícito</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (musica of musicas(); track musica.id) {
-          <tr>
-            <td>{{ musica.id }}</td>
-            <td>{{ musica.titulo }}</td>
-            <td>{{ musica.explicito ? 'Sim' : 'Não' }}</td>
-            <td class="acoes">
-              <button type="button" [disabled]="reproduzindoId() === musica.id" (click)="reproduzir(musica)">
-                {{ reproduzindoId() === musica.id ? 'Reproduzindo...' : 'Reproduzir' }}
-              </button>
-              <button type="button" class="perigo" [disabled]="removendoId() === musica.id" (click)="remover(musica)">
-                {{ removendoId() === musica.id ? 'Removendo...' : 'Remover' }}
-              </button>
-            </td>
-          </tr>
-        } @empty {
-          <tr><td colspan="4">Esta playlist ainda não tem músicas.</td></tr>
-        }
-      </tbody>
-    </table>
-  }
-</div>
+@if (player.erro(); as msg) {
+  <p class="erro">{{ msg }}</p>
+}
 
-<div class="cartao adicionar-secao">
+@if (carregando()) {
+  <p class="rotulo">Carregando músicas...</p>
+} @else {
+  <p class="contagem rotulo">
+    <span class="num">{{ musicas().length }}</span>
+    {{ musicas().length === 1 ? 'música nesta playlist' : 'músicas nesta playlist' }}
+  </p>
+
+  <ul class="lista">
+    @for (musica of musicas(); track musica.id) {
+      <li class="faixa" [class.atual]="ehAtual(musica)">
+        <!-- A linha toda toca; "Tirar" fica de fora para não virar um
+             clique perigoso dentro do alvo de reprodução. -->
+        <button type="button" class="faixa-alvo"
+                [disabled]="player.pedindoId() === musica.id"
+                [attr.aria-label]="rotuloDe(musica)"
+                (click)="reproduzir(musica)">
+          <span class="arte">
+            @if (musica.capa) {
+              <img class="faixa-capa" [src]="musica.capa" alt="" loading="lazy" width="40" height="40" />
+            } @else {
+              <span class="faixa-capa vazia" aria-hidden="true">{{ inicialDe(musica) }}</span>
+            }
+            <span class="arte-selo" aria-hidden="true">
+              @if (player.pedindoId() === musica.id) {
+                <span class="girando"></span>
+              } @else if (ehAtual(musica) && player.tocando()) {
+                <span class="arte-medidor">
+                  @for (n of player.niveisCurtos(); track $index) {
+                    <i [style.transform]="'scaleY(' + (0.14 + n * 0.86) + ')'"></i>
+                  }
+                </span>
+              } @else if (ehAtual(musica)) {
+                <svg viewBox="0 0 16 16"><rect x="4" y="2.5" width="3" height="11" rx="1"/><rect x="9" y="2.5" width="3" height="11" rx="1"/></svg>
+              } @else {
+                <svg viewBox="0 0 16 16"><path d="M4.5 2.8v10.4a.7.7 0 0 0 1.07.6l8.2-5.2a.7.7 0 0 0 0-1.2L5.57 2.2a.7.7 0 0 0-1.07.6z"/></svg>
+              }
+            </span>
+          </span>
+
+          <span class="faixa-dados">
+            <span class="faixa-titulo">
+              {{ musica.titulo }}
+              @if (musica.explicito) {
+                <span class="explicito" title="Conteúdo explícito">E</span>
+              }
+            </span>
+            <span class="faixa-artista">{{ musica.artista || 'Artista desconhecido' }}</span>
+          </span>
+
+          @if (ehAtual(musica)) {
+            <span class="faixa-tempo num">{{ player.formatar(player.posicao()) }}</span>
+          }
+        </button>
+
+        <button type="button" class="perigo" [disabled]="removendoId() === musica.id" (click)="remover(musica)">
+          {{ removendoId() === musica.id ? 'Tirando...' : 'Tirar' }}
+        </button>
+
+        @if (ehAtual(musica)) {
+          <span class="faixa-progresso" aria-hidden="true"
+                [style.transform]="'scaleX(' + player.fracao() + ')'"></span>
+        }
+      </li>
+    } @empty {
+      <li class="vazio">Esta playlist ainda não tem músicas. Escolha uma abaixo.</li>
+    }
+  </ul>
+}
+
+<section class="adicionar-secao">
   <h3>Adicionar música</h3>
-  <input type="text" placeholder="Filtrar por título..." [(ngModel)]="filtro" />
+
+  <input type="search" class="busca" placeholder="Filtrar por título ou artista"
+         aria-label="Filtrar catálogo por título ou artista"
+         [ngModel]="filtro()" (ngModelChange)="filtro.set($event)" />
 
   @if (carregandoCatalogo()) {
-    <p>Carregando catálogo...</p>
+    <p class="rotulo">Carregando catálogo...</p>
   } @else {
-    <table>
-      <thead>
-        <tr>
-          <th>Título</th>
-          <th>Explícito</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (musica of disponiveis(); track musica.id) {
-          <tr>
-            <td>{{ musica.titulo }}</td>
-            <td>{{ musica.explicito ? 'Sim' : 'Não' }}</td>
-            <td>
-              <button type="button" [disabled]="adicionandoId() === musica.id" (click)="adicionar(musica)">
-                {{ adicionandoId() === musica.id ? 'Adicionando...' : 'Escolher' }}
-              </button>
-            </td>
-          </tr>
-        } @empty {
-          <tr><td colspan="3">Nenhuma música disponível para adicionar.</td></tr>
-        }
-      </tbody>
-    </table>
+    <p class="contagem rotulo">
+      <span class="num">{{ disponiveis().length }}</span> disponíveis
+    </p>
+
+    <ul class="lista">
+      @for (musica of visiveis(); track musica.id) {
+        <li class="faixa">
+          @if (musica.capa) {
+            <img class="faixa-capa" [src]="musica.capa" [alt]="''" loading="lazy" width="40" height="40" />
+          } @else {
+            <span class="faixa-capa vazia" aria-hidden="true">{{ inicialDe(musica) }}</span>
+          }
+
+          <span class="faixa-dados">
+            <span class="faixa-titulo">
+              {{ musica.titulo }}
+              @if (musica.explicito) {
+                <span class="explicito" title="Conteúdo explícito" aria-label="Conteúdo explícito">E</span>
+              }
+            </span>
+            <span class="faixa-artista">{{ musica.artista || 'Artista desconhecido' }}</span>
+          </span>
+
+          <button type="button" class="secundario estavel"
+                  [disabled]="adicionandoId() === musica.id" (click)="adicionar(musica)">
+            {{ adicionandoId() === musica.id ? 'Adicionando...' : 'Escolher' }}
+          </button>
+        </li>
+      } @empty {
+        <li class="vazio">Nenhuma música disponível com esse filtro.</li>
+      }
+    </ul>
+
+    @if (totalPaginas() > 1) {
+      <nav class="paginacao" aria-label="Páginas do catálogo">
+        <button type="button" class="secundario" [disabled]="pagina() === 1" (click)="irPara(pagina() - 1)">Anterior</button>
+        <span class="rotulo num">Página {{ pagina() }} de {{ totalPaginas() }}</span>
+        <button type="button" class="secundario" [disabled]="pagina() === totalPaginas()" (click)="irPara(pagina() + 1)">Próxima</button>
+      </nav>
+    }
   }
-</div>
+</section>
+
+<app-confirmacao
+  [aberto]="aRemover() !== null"
+  titulo="Tirar da playlist?"
+  [mensagem]="aRemover() ? '“' + aRemover()!.titulo + '” sai desta playlist. A música continua disponível em Músicas.' : ''"
+  rotuloConfirmar="Tirar da playlist"
+  (confirmar)="confirmarRemocao()"
+  (cancelar)="cancelarRemocao()" />

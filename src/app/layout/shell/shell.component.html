@@ -1,17 +1,32 @@
 <div class="shell">
-  <aside class="barra-lateral">
-    <h1 class="logo">Spotifei <span>Família</span></h1>
+  <aside #lateral class="barra-lateral">
+    <h1 class="logo">
+      <app-logo [tamanho]="30" />
+      <span class="logo-texto">Spotifei <span>Família</span></span>
+    </h1>
 
     <nav>
       <a routerLink="/musicas" routerLinkActive="ativo">Músicas</a>
       <a routerLink="/playlists" routerLinkActive="ativo">Playlists</a>
       <a routerLink="/familia" routerLinkActive="ativo">Família</a>
+      <a routerLink="/configuracoes" routerLinkActive="ativo">Configurações</a>
     </nav>
 
     <div class="usuario">
       @if (usuario(); as u) {
-        <p class="nome">{{ u.nomeUsuario }}</p>
-        <p class="email">{{ u.email }}</p>
+        <a class="atalho-conta" routerLink="/configuracoes" title="Abrir configurações">
+          <span class="avatar-mini">
+            @if (u.foto) {
+              <img [src]="u.foto" alt="" />
+            } @else {
+              <span aria-hidden="true">{{ inicial() }}</span>
+            }
+          </span>
+          <span class="identidade">
+            <span class="nome">{{ u.nomeUsuario }}</span>
+            <span class="email">{{ u.email }}</span>
+          </span>
+        </a>
       }
       <button type="button" class="botao-sair" (click)="sair()">Sair</button>
     </div>
@@ -21,3 +36,14 @@
     <router-outlet />
   </main>
 </div>
+
+<app-player-barra />
+
+<app-confirmacao
+  [aberto]="confirmandoSaida()"
+  [destrutivo]="false"
+  titulo="Sair da conta?"
+  mensagem="A reprodução para e você volta para a tela de login."
+  rotuloConfirmar="Sair"
+  (confirmar)="confirmarSaida()"
+  (cancelar)="cancelarSaida()" />

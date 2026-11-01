@@ -1,0 +1,95 @@
+<a class="voltar" routerLink="/musicas">Voltar para músicas</a>
+
+<h2>Adicionar músicas</h2>
+
+@if (erro(); as msg) {
+  <p class="erro">{{ msg }}</p>
+}
+
+<label class="area-arquivo" [class.preenchida]="fila().length">
+  <!-- multiple + webkitdirectory: dá para escolher arquivos soltos OU
+       uma pasta inteira. O atributo de pasta só existe em navegador
+       desktop; no celular o seletor múltiplo comum continua valendo. -->
+  <input
+    type="file"
+    multiple
+    accept="audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/wav,.mp3,.m4a,.aac,.ogg,.wav"
+    [disabled]="enviando()"
+    (change)="aoEscolher($event)" />
+  <span class="arquivo-nome">
+    {{ fila().length ? 'Adicionar mais arquivos' : 'Escolher arquivos de áudio' }}
+  </span>
+  <span class="arquivo-info">MP3, M4A, AAC, OGG ou WAV · até 50 MB cada</span>
+</label>
+
+@if (fila().length) {
+  <div class="resumo">
+    <span><strong class="num">{{ fila().length }}</strong> na fila</span>
+    <span><strong class="num">{{ tamanho(bytesEnviaveis()) }}</strong> a enviar</span>
+    @if (prontas()) { <span class="ok">{{ prontas() }} enviadas</span> }
+    @if (falhas()) { <span class="ruim">{{ falhas() }} falharam</span> }
+    @if (ignoradas()) { <span class="neutro">{{ ignoradas() }} ignoradas</span> }
+  </div>
+
+  @if (passaDaCota()) {
+    <p class="erro">
+      A fila tem {{ tamanho(bytesEnviaveis()) }} e o plano gratuito do Supabase
+      guarda 1 GB no total. O envio vai parar quando o espaço acabar — tire
+      arquivos da fila antes de começar.
+    </p>
+  }
+
+  <ul class="fila">
+    @for (item of fila(); track item.id) {
+      <li class="item" [attr.data-situacao]="item.situacao">
+        <div class="item-campos">
+          <input
+            type="text" class="campo-linha" placeholder="Título"
+            [(ngModel)]="item.titulo" [disabled]="enviando() || item.situacao === 'pronta'" />
+          <input
+            type="text" class="campo-linha" placeholder="Artista"
+            [(ngModel)]="item.artista" [disabled]="enviando() || item.situacao === 'pronta'" />
+        </div>
+
+        <div class="item-estado">
+          @switch (item.situacao) {
+            @case ('enviando') {
+              <div class="progresso-trilho" [attr.aria-label]="item.progresso + '%'">
+                <div class="progresso-nivel" [style.width.%]="item.progresso"></div>
+              </div>
+              <span class="num">{{ item.progresso }}%</span>
+            }
+            @case ('pronta') { <span class="ok">enviada</span> }
+            @case ('falhou') { <span class="ruim" [title]="item.motivo">{{ item.motivo }}</span> }
+            @case ('ignorada') { <span class="neutro" [title]="item.motivo">{{ item.motivo }}</span> }
+            @default {
+              <span class="neutro num">{{ tamanho(item.arquivo.size) }}</span>
+              <label class="explicito-linha" [title]="'Marcar ' + item.titulo + ' como explícita'">
+                <input type="checkbox" [(ngModel)]="item.explicito" [disabled]="enviando()" />
+                <span>E</span>
+              </label>
+              <button type="button" class="remover" [disabled]="enviando()"
+                      [attr.aria-label]="'Tirar ' + item.arquivo.name + ' da fila'"
+                      (click)="remover(item)">&times;</button>
+            }
+          }
+        </div>
+      </li>
+    }
+  </ul>
+
+  <div class="acoes">
+    @if (enviando()) {
+      <button type="button" class="perigo" (click)="parar()">Parar</button>
+      <span class="rotulo">Enviando... {{ prontas() }} de {{ fila().length }}</span>
+    } @else {
+      <button type="button" class="estavel" [disabled]="!podeEnviar()" (click)="enviarTodos()">
+        Enviar {{ aguardando() }} música{{ aguardando() === 1 ? '' : 's' }}
+      </button>
+      <button type="button" class="secundario" (click)="limpar()">Limpar fila</button>
+      @if (prontas()) {
+        <button type="button" class="secundario" (click)="irParaMusicas()">Ver na lista</button>
+      }
+    }
+  </div>
+}

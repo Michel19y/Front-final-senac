@@ -1,65 +1,166 @@
 .shell {
   display: flex;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
+/* A barra lateral é o chassi do equipamento: superfície sólida, sem borda
+   arredondada, encostada na lateral da tela.
+   Presa na altura da JANELA, não da página: sem isto ela cresce junto com
+   a lista e o botão Sair vai parar lá no fim do scroll. */
 .barra-lateral {
-  width: 240px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100dvh;
+  width: 232px;
   flex-shrink: 0;
-  background: var(--cor-superficie);
-  padding: 1.5rem 1rem;
+  background: var(--chassi);
+  border-right: 1px solid var(--sulco);
+  padding: var(--e-6) var(--e-4);
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--e-8);
+  /* Com muitos itens de menu, a própria lateral rola por dentro. */
+  overflow-y: auto;
 }
 
 .logo {
-  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-stretch: 80%;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
   margin: 0;
 
-  span {
-    color: var(--cor-destaque);
+  .logo-texto {
+    display: block;
+  }
+
+  .logo-texto span {
+    display: block;
+    color: var(--ambar);
   }
 }
 
 nav {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 2px;
   flex: 1;
 
   a {
-    padding: 0.6rem 0.75rem;
-    border-radius: 6px;
-    color: var(--cor-texto-suave);
+    position: relative;
+    padding: var(--e-2) var(--e-3);
+    border-radius: var(--raio-sm);
+    color: var(--suave);
     text-decoration: none;
-    font-weight: 500;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    font-stretch: 88%;
+    transition: color 150ms ease, background-color 150ms ease;
 
-    &:hover {
-      background: var(--cor-superficie-hover);
-      color: var(--cor-texto);
+    /* Ativo = traço âmbar. Fundo fica só para o hover, senão os
+       dois estados ficariam idênticos. */
+    &.ativo {
+      color: var(--osso);
     }
 
-    &.ativo {
-      background: var(--cor-superficie-hover);
-      color: var(--cor-texto);
+    &.ativo::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 2px;
+      background: var(--ambar);
     }
   }
 }
 
+@media (hover: hover) and (pointer: fine) {
+  nav a:hover {
+    color: var(--osso);
+    background: var(--chassi-alto);
+  }
+}
+
 .usuario {
-  border-top: 1px solid var(--cor-borda);
-  padding-top: 1rem;
+  border-top: 1px solid var(--sulco);
+  padding-top: var(--e-4);
+
+  /* O próprio nome é o caminho para as configurações: é onde a pessoa
+     procura a conta, antes de ler o menu. */
+  .atalho-conta {
+    display: flex;
+    align-items: center;
+    gap: var(--e-3);
+    margin-bottom: var(--e-3);
+    padding: var(--e-2);
+    margin-left: calc(var(--e-2) * -1);
+    margin-right: calc(var(--e-2) * -1);
+    border-radius: var(--raio-sm);
+    color: inherit;
+    text-decoration: none;
+    min-width: 0;
+    transition: background-color 150ms ease;
+  }
+
+  .identidade {
+    min-width: 0;
+  }
 
   .nome {
-    margin: 0;
+    display: block;
+    font-size: var(--t-sm);
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .email {
-    margin: 0 0 0.75rem;
-    font-size: 0.8rem;
-    color: var(--cor-texto-suave);
+    display: block;
+    font-size: var(--t-xs);
+    color: var(--suave);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Foto no tamanho de ícone: confirma de relance em qual conta se está. */
+.avatar-mini {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--chassi-alto);
+  border: 1px solid var(--sulco);
+  display: grid;
+  place-items: center;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--suave);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .usuario .atalho-conta:hover {
+    background: var(--chassi-alto);
+  }
+
+  .usuario .atalho-conta:hover .avatar-mini {
+    border-color: var(--ambar);
   }
 }
 
@@ -69,8 +170,10 @@ nav {
 
 .conteudo {
   flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
+  min-width: 0;
+  /* O extra embaixo e o espaco do player fixo. Num shorthand so: separado,
+     a declaracao de padding depois dele zerava o espaco de novo. */
+  padding: var(--e-8) var(--e-8) calc(var(--e-8) + 5rem);
 }
 
 @media (max-width: 720px) {
@@ -79,35 +182,84 @@ nav {
   }
 
   .barra-lateral {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: auto;
+    overflow: visible;
     width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--sulco);
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
+    gap: var(--e-3);
+    /* Sem padding embaixo: as abas encostam na borda inferior da barra. */
+    padding: var(--e-3) var(--e-4) 0;
   }
 
+  .logo .logo-texto span {
+    display: inline;
+  }
+
+  /* Barra de abas ocupando a largura inteira. Sem isso a navegação
+     terminava em "Família" e sobrava quase metade da barra vazia à
+     direita — o topo não parecia preenchido. */
   nav {
     flex-direction: row;
-    flex-wrap: wrap;
     flex: 1 1 100%;
     order: 2;
+    gap: 0;
+    /* Sangra por cima do padding lateral, de borda a borda. */
+    margin: 0 calc(var(--e-4) * -1);
+
+    a {
+      flex: 1;
+      text-align: center;
+      padding: var(--e-3) var(--e-2);
+
+
+      &.ativo::before {
+        inset: auto 0 0;
+        width: auto;
+        height: 2px;
+      }
+    }
   }
 
+  /* No celular o cabeçalho tem duas linhas, não três: identidade + sair em
+     cima, navegação embaixo. O e-mail sai — num telefone ele não é
+     acionável e só criava um vão morto no meio da barra. */
   .usuario {
     border-top: none;
     padding-top: 0;
-    flex: 1 1 100%;
     order: 1;
+    margin-left: auto;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+    gap: var(--e-3);
 
-    .nome,
-    .email {
+    .atalho-conta {
       margin: 0;
+      padding: 0;
     }
+
+    .nome {
+      color: var(--suave);
+      font-weight: 500;
+      /* Nomes longos encolhem antes de empurrar o "Sair" para fora. */
+      max-width: 9rem;
+    }
+
+    .email {
+      display: none;
+    }
+  }
+
+  /* No telefone a aba "Configurações" não cabe na fileira sem espremer as
+     outras três. A foto ao lado do nome já leva ao mesmo lugar. */
+  nav a[href='/configuracoes'] {
+    display: none;
   }
 
   .botao-sair {
@@ -115,6 +267,6 @@ nav {
   }
 
   .conteudo {
-    padding: 1.25rem;
+    padding: var(--e-6) var(--e-4) calc(var(--e-6) + 7rem);
   }
 }

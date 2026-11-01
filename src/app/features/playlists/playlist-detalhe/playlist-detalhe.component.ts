@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -6,17 +6,27 @@ import { AuthService } from '../../../core/services/auth.service';
 import { MusicaService } from '../../../core/services/musica.service';
 import { PlaylistService } from '../../../core/services/playlist.service';
 import { Musica, Playlist } from '../../../core/models/models';
+import { ConfirmacaoComponent } from '../../../shared/confirmacao/confirmacao.component';
+import { PlayerService } from '../../../core/services/player.service';
+
+const POR_PAGINA = 20;
+
+/** Minúsculas e sem acento, para "coracao" achar "Coração". */
+function normalizar(texto: string): string {
+  return texto.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
 
 @Component({
   selector: 'app-playlist-detalhe',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, ConfirmacaoComponent],
   templateUrl: './playlist-detalhe.component.html',
   styleUrl: './playlist-detalhe.component.scss'
 })
 export class PlaylistDetalheComponent implements OnInit {
   playlistId = 0;
-  filtro = '';
+  readonly filtro = signal('');
+  readonly pagina = signal(1);
   nomeEditado = '';
 
   readonly playlist = signal<Playlist | null>(null);
@@ -29,18 +39,32 @@ export class PlaylistDetalheComponent implements OnInit {
   readonly carregandoCatalogo = signal(false);
   readonly adicionandoId = signal<number | null>(null);
   readonly removendoId = signal<number | null>(null);
-  readonly reproduzindoId = signal<number | null>(null);
+
+  /** Música aguardando confirmação de remoção; null = diálogo fechado. */
+  readonly aRemover = signal<Musica | null>(null);
 
   readonly mensagem = signal<string | null>(null);
   readonly erro = signal<string | null>(null);
 
+  /** Catálogo menos o que já está na playlist, filtrado por título E artista. */
   readonly disponiveis = computed(() => {
     const jaNaPlaylist = new Set(this.musicas().map((m) => m.id));
-    const termo = this.filtro.trim().toLowerCase();
+    const termo = normalizar(this.filtro().trim());
 
     return this.todasMusicas()
       .filter((m) => !jaNaPlaylist.has(m.id))
-      .filter((m) => !termo || m.titulo.toLowerCase().includes(termo));
+      .filter((m) => !termo ||
+        normalizar(m.titulo).includes(termo) ||
+        normalizar(m.artista ?? '').includes(termo));
+  });
+
+  readonly totalPaginas = computed(() =>
+    Math.max(1, Math.ceil(this.disponiveis().length / POR_PAGINA)));
+
+  /** O catálogo tem centenas de faixas: despejar tudo de uma vez trava a tela. */
+  readonly visiveis = computed(() => {
+    const inicio = (this.pagina() - 1) * POR_PAGINA;
+    return this.disponiveis().slice(inicio, inicio + POR_PAGINA);
   });
 
   private get usuarioId(): number {
@@ -48,11 +72,48 @@ export class PlaylistDetalheComponent implements OnInit {
   }
 
   constructor(
+    readonly player: PlayerService,
     private readonly route: ActivatedRoute,
     private readonly authService: AuthService,
     private readonly musicaService: MusicaService,
     private readonly playlistService: PlaylistService
-  ) {}
+  ) {
+    // Filtro mudou, volta pra primeira página: ficar numa página 9 que não
+    // existe mais no resultado novo mostraria lista vazia sem explicação.
+    effect(() => {
+      this.filtro();
+      this.pagina.set(1);
+    }, { allowSignalWrites: true });
+  }
+
+  /** Inicial do artista, no lugar da capa quando a faixa não tem arte. */
+  inicialDe(musica: Musica): string {
+    const base = normalizar((musica.artista || musica.titulo || '').trim());
+    const c = base.charAt(0).toUpperCase();
+    return c >= 'A' && c <= 'Z' ? c : '#';
+  }
+
+  ehAtual(musica: Musica): boolean {
+    return this.player.faixa()?.id === musica.id;
+  }
+
+  /** O que o leitor de tela anuncia: a linha toda virou um botão. */
+  rotuloDe(musica: Musica): string {
+    const nome = `${musica.titulo}, ${musica.artista || 'artista desconhecido'}`;
+    if (this.player.pedindoId() === musica.id) {
+      return `Abrindo ${nome}`;
+    }
+    if (this.ehAtual(musica)) {
+      return this.player.tocando() ? `Pausar ${nome}` : `Retomar ${nome}`;
+    }
+    return `Tocar ${nome}`;
+  }
+
+
+
+  irPara(p: number): void {
+    this.pagina.set(Math.max(1, Math.min(p, this.totalPaginas())));
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -157,11 +218,22 @@ export class PlaylistDetalheComponent implements OnInit {
     });
   }
 
+  /** Só abre o diálogo — a remoção de fato acontece em confirmarRemocao(). */
   remover(musica: Musica): void {
-    if (this.removendoId() !== null) {
+    this.aRemover.set(musica);
+  }
+
+  cancelarRemocao(): void {
+    this.aRemover.set(null);
+  }
+
+  confirmarRemocao(): void {
+    const musica = this.aRemover();
+    if (!musica || this.removendoId() !== null) {
       return;
     }
 
+    this.aRemover.set(null);
     this.erro.set(null);
     this.removendoId.set(musica.id);
 
@@ -177,24 +249,8 @@ export class PlaylistDetalheComponent implements OnInit {
     });
   }
 
+  /** As músicas desta playlist viram a fila do player. */
   reproduzir(musica: Musica): void {
-    if (this.reproduzindoId() !== null) {
-      return;
-    }
-
-    this.erro.set(null);
-    this.mensagem.set(null);
-    this.reproduzindoId.set(musica.id);
-
-    this.musicaService.reproduzir(this.usuarioId, musica.id).subscribe({
-      next: (resposta) => {
-        this.reproduzindoId.set(null);
-        this.mensagem.set(resposta.mensagem);
-      },
-      error: (erro: HttpErrorResponse) => {
-        this.reproduzindoId.set(null);
-        this.erro.set(erro.error?.erro ?? 'Não foi possível reproduzir esta música.');
-      }
-    });
+    this.player.pedirParaTocar(musica, this.musicas());
   }
 }

@@ -1,0 +1,97 @@
+<h2>Configurações</h2>
+
+@if (erro(); as msg) {
+  <p class="erro">{{ msg }}</p>
+}
+
+@if (aviso(); as msg) {
+  <p class="sucesso">{{ msg }}</p>
+}
+
+<section class="secao">
+  <h3>Foto de perfil</h3>
+
+  <!-- Um input só para a tela toda; a miniatura e o visor apenas o acionam. -->
+  <input #arquivo type="file" class="arquivo-oculto"
+         accept="image/jpeg,image/png,image/webp,image/gif"
+         aria-label="Escolher foto de perfil"
+         [disabled]="enviandoFoto()" (change)="aoEscolherFoto($event)" />
+
+  <div class="foto-linha">
+    <button type="button" class="avatar" [class.enviando]="enviandoFoto()"
+            [attr.aria-label]="foto() ? 'Ver sua foto de perfil em tamanho grande' : 'Escolher foto de perfil'"
+            (click)="aoClicarNoAvatar()">
+      @if (foto(); as src) {
+        <img [src]="src" alt="" />
+      } @else {
+        <span class="avatar-inicial" aria-hidden="true">{{ inicial() }}</span>
+      }
+
+      @if (enviandoFoto()) {
+        <span class="avatar-carga" aria-hidden="true">{{ progresso() }}%</span>
+      }
+    </button>
+
+    <div class="foto-texto">
+      <button type="button" class="secundario estavel"
+              [disabled]="enviandoFoto()" (click)="escolherArquivo()">
+        {{ foto() ? 'Trocar foto' : 'Escolher foto' }}
+      </button>
+      <p class="rotulo">
+        {{ foto() ? 'Toque na foto para vê-la inteira.' : 'JPG, PNG, WEBP ou GIF · até 3 MB' }}
+      </p>
+      @if (enviandoFoto()) {
+        <div class="progresso-trilho"><div class="progresso-nivel" [style.width.%]="progresso()"></div></div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- <dialog> nativo: foco preso, Esc e camada acima de tudo saem de graça. -->
+<dialog #visor class="visor" (close)="fecharFoto()" (click)="aoClicarNoFundo($event)">
+  @if (foto(); as src) {
+    <img [src]="src" alt="Sua foto de perfil" />
+  }
+  <div class="visor-acoes">
+    <button type="button" class="secundario" [disabled]="enviandoFoto()" (click)="trocarPeloVisor()">
+      Trocar foto
+    </button>
+    <button type="button" (click)="fecharFoto()">Fechar</button>
+  </div>
+</dialog>
+
+<section class="secao">
+  <h3>Seu nome</h3>
+  <div class="linha">
+    <input type="text" maxlength="50" aria-label="Seu nome"
+           [ngModel]="nome()" (ngModelChange)="nome.set($event)"
+           [disabled]="salvandoNome()" (keyup.enter)="salvarNome()" />
+    <button type="button" class="estavel" [disabled]="!nomeMudou() || salvandoNome()" (click)="salvarNome()">
+      {{ salvandoNome() ? 'Salvando...' : 'Salvar' }}
+    </button>
+  </div>
+  <p class="rotulo">É o nome que aparece no topo e para os outros membros da família.</p>
+</section>
+
+<section class="secao">
+  <h3>Reprodução</h3>
+  <button type="button" class="chave" [class.ligado]="player.automatico()"
+          [attr.aria-pressed]="player.automatico()" (click)="alternarAutomatico()">
+    <span class="chave-led" [class.aceso]="player.automatico()" aria-hidden="true"></span>
+    <span>
+      Emendar automaticamente
+      <span class="dica">Ao terminar uma faixa, toca a próxima da lista.</span>
+    </span>
+  </button>
+</section>
+
+<section class="secao">
+  <h3>Conta</h3>
+  <dl class="dados">
+    <dt class="rotulo">E-mail</dt>
+    <dd>{{ usuario()?.email }}</dd>
+    <dt class="rotulo">Código da conta</dt>
+    <dd class="num">{{ usuario()?.id }}</dd>
+  </dl>
+  <p class="rotulo">E-mail e CPF não podem ser alterados por aqui.</p>
+</section>

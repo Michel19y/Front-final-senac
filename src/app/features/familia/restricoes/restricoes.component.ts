@@ -1,10 +1,14 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { MusicaService } from '../../../core/services/musica.service';
 import { RestricaoService } from '../../../core/services/restricao.service';
 import { ArtistaBusca, LimiteDiario, Restricao } from '../../../core/models/models';
+
+/** Espera o dedo parar antes de ir ao servidor a cada tecla. */
+const ESPERA_BUSCA = 300;
 
 @Component({
   selector: 'app-restricoes',
@@ -15,8 +19,13 @@ import { ArtistaBusca, LimiteDiario, Restricao } from '../../../core/models/mode
 })
 export class RestricoesComponent implements OnInit {
   contaFilhaId = 0;
-  nomeArtistaBusca = '';
   novoLimite: number | null = null;
+
+  readonly termoArtista = signal('');
+  /** Quantas faixas do catálogo estão marcadas como explícitas. */
+  readonly explicitasNoCatalogo = signal(0);
+
+  private relogioBusca?: ReturnType<typeof setTimeout>;
 
   readonly restricoes = signal<Restricao[]>([]);
   readonly limite = signal<LimiteDiario | null>(null);
@@ -41,8 +50,22 @@ export class RestricoesComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly authService: AuthService,
+    private readonly musicaService: MusicaService,
     private readonly restricaoService: RestricaoService
-  ) {}
+  ) {
+    effect(() => {
+      const termo = this.termoArtista().trim();
+      clearTimeout(this.relogioBusca);
+
+      // Uma letra casa com meio catálogo e não ajuda ninguém.
+      if (termo.length < 2) {
+        this.resultadosArtistas.set([]);
+        this.buscandoArtistas.set(false);
+        return;
+      }
+      this.relogioBusca = setTimeout(() => this.buscarArtistas(termo), ESPERA_BUSCA);
+    }, { allowSignalWrites: true });
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -50,11 +73,35 @@ export class RestricoesComponent implements OnInit {
       this.carregar();
       this.carregarLimite();
     });
+
+    // Para dizer quantas faixas a chave de explícito realmente corta.
+    this.musicaService.listar(this.responsavelId).subscribe({
+      next: (m) => this.explicitasNoCatalogo.set(m.filter((f) => f.explicito).length),
+      error: () => this.explicitasNoCatalogo.set(0)
+    });
   }
 
-  carregar(): void {
+  /** Letra no lugar da capa: artista não tem arte no catálogo. */
+  inicialDe(nome: string): string {
+    return (nome || '?').trim().charAt(0).toUpperCase();
+  }
+
+  jaBloqueado(artistaId: number): boolean {
+    return this.artistasBloqueados().some((r) => r.artistaId === artistaId);
+  }
+
+  /**
+   * `silencioso` relê sem apagar a tela.
+   *
+   * Depois de cortar ou liberar um artista, piscar "Carregando restrições..."
+   * derrubava a busca inteira junto — você perdia a lista de resultados por
+   * causa de uma atualização que já tinha o dado na mão.
+   */
+  carregar(silencioso = false): void {
     this.erro.set(null);
-    this.carregando.set(true);
+    if (!silencioso) {
+      this.carregando.set(true);
+    }
 
     this.restricaoService.listar(this.responsavelId, this.contaFilhaId).subscribe({
       next: (restricoes) => {
@@ -78,16 +125,11 @@ export class RestricoesComponent implements OnInit {
     });
   }
 
-  buscarArtistas(): void {
-    if (!this.nomeArtistaBusca.trim()) {
-      this.resultadosArtistas.set([]);
-      return;
-    }
-
+  private buscarArtistas(termo: string): void {
     this.erro.set(null);
     this.buscandoArtistas.set(true);
 
-    this.restricaoService.buscarArtistas(this.nomeArtistaBusca).subscribe({
+    this.restricaoService.buscarArtistas(termo).subscribe({
       next: (artistas) => {
         this.buscandoArtistas.set(false);
         this.resultadosArtistas.set(artistas);
@@ -110,9 +152,9 @@ export class RestricoesComponent implements OnInit {
     this.restricaoService.bloquearArtista(this.responsavelId, this.contaFilhaId, artista.id).subscribe({
       next: () => {
         this.bloqueandoArtistaId.set(null);
-        this.nomeArtistaBusca = '';
-        this.resultadosArtistas.set([]);
-        this.carregar();
+        // A busca fica como está: cortar um artista costuma vir em série,
+        // e limpar o campo obrigaria a digitar tudo de novo.
+        this.carregar(true);
       },
       error: (erro: HttpErrorResponse) => {
         this.bloqueandoArtistaId.set(null);
@@ -132,7 +174,7 @@ export class RestricoesComponent implements OnInit {
     this.restricaoService.desbloquearArtista(this.responsavelId, this.contaFilhaId, restricao.artistaId).subscribe({
       next: () => {
         this.desbloqueandoArtistaId.set(null);
-        this.carregar();
+        this.carregar(true);
       },
       error: (erro: HttpErrorResponse) => {
         this.desbloqueandoArtistaId.set(null);
@@ -156,7 +198,7 @@ export class RestricoesComponent implements OnInit {
     acao.subscribe({
       next: () => {
         this.salvandoExplicito.set(false);
-        this.carregar();
+        this.carregar(true);
       },
       error: (erro: HttpErrorResponse) => {
         this.salvandoExplicito.set(false);

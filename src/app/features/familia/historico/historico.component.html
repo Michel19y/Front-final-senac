@@ -1,32 +1,34 @@
-<a class="voltar" routerLink="/familia">&larr; Voltar para a família</a>
+<a class="voltar" routerLink="/familia">Voltar para a família</a>
 
-<h2>Histórico de reprodução</h2>
+<h2>O que passou pelo canal</h2>
 
 @if (erro(); as msg) {
   <p class="erro">{{ msg }}</p>
 }
 
-<div class="cartao">
-  @if (carregando()) {
-    <p>Carregando histórico...</p>
-  } @else {
+@if (carregando()) {
+  <p class="rotulo">Carregando histórico...</p>
+} @else {
+  <div class="tabela-rolavel">
     <table>
       <thead>
         <tr>
-          <th>Data/Hora</th>
           <th>Música</th>
+          <th class="coluna-quando">Quando</th>
         </tr>
       </thead>
       <tbody>
         @for (item of historico(); track item.dataHora + item.titulo) {
           <tr>
-            <td>{{ item.dataHora | date: 'dd/MM/yyyy HH:mm' }}</td>
             <td>{{ item.titulo }}</td>
+            <td class="coluna-quando">{{ item.dataHora | date: 'dd/MM HH:mm' }}</td>
           </tr>
         } @empty {
-          <tr><td colspan="2">Nenhuma reprodução registrada.</td></tr>
+          <tr>
+            <td colspan="2" class="vazio">Nada reproduzido ainda nesta conta.</td>
+          </tr>
         }
       </tbody>
     </table>
-  }
-</div>
+  </div>
+}

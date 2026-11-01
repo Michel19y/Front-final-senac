@@ -1,54 +1,162 @@
-<h2>Músicas</h2>
+<div class="cabecalho">
+  <h2>Músicas</h2>
+  <a class="botao-link" routerLink="/musicas/nova">Adicionar músicas</a>
+</div>
 
-<div class="busca">
-  <input type="text" placeholder="Buscar por título..." [(ngModel)]="termo" (keyup.enter)="buscar()" />
-  <button type="button" (click)="buscar()" [disabled]="carregando()">{{ carregando() ? 'Buscando...' : 'Buscar' }}</button>
-  @if (termoBuscado()) {
-    <button type="button" class="secundario" (click)="limparBusca()">Limpar</button>
+@if (recentes().length && !temFiltro()) {
+  <section class="recentes" aria-label="Tocadas recentemente">
+    <h3 class="recentes-titulo">Tocadas recentemente</h3>
+    <ul class="recentes-trilho">
+      @for (m of recentes(); track m.id) {
+        <li>
+          <button type="button" class="recente"
+                  [class.atual]="player.faixa()?.id === m.id"
+                  [disabled]="player.pedindoId() === m.id"
+                  (click)="reproduzir(m)">
+            @if (m.capa) {
+              <img [src]="m.capa" [alt]="''" loading="lazy" width="104" height="104" />
+            } @else {
+              <span class="recente-vazia" aria-hidden="true">{{ inicialDe(m) }}</span>
+            }
+            <span class="recente-titulo">{{ m.titulo }}</span>
+            <span class="recente-artista">{{ m.artista }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
+<div class="filtros">
+  <input
+    type="search"
+    class="busca"
+    placeholder="Filtrar por título ou artista"
+    aria-label="Filtrar por título ou artista"
+    [ngModel]="termo()"
+    (ngModelChange)="termo.set($event)" />
+
+  <label class="so-explicitas" [class.ativa]="soExplicitas()">
+    <input type="checkbox" [ngModel]="soExplicitas()" (ngModelChange)="soExplicitas.set($event)" />
+    <span>Só explícitas</span>
+  </label>
+
+  @if (temFiltro()) {
+    <button type="button" class="secundario" (click)="limparFiltros()">Limpar</button>
   }
 </div>
 
-@if (mensagem(); as msg) {
-  <p class="sucesso">{{ msg }}</p>
+<!-- Índice por inicial do artista. Só aparecem letras que têm música. -->
+@if (letras().length > 1) {
+  <nav class="indice" aria-label="Filtrar por letra">
+    <button type="button" [class.ativa]="letra() === null" (click)="escolherLetra(null)">Todas</button>
+    @for (l of letras(); track l) {
+      <button type="button" [class.ativa]="letra() === l" (click)="escolherLetra(l)">{{ l }}</button>
+    }
+  </nav>
 }
+
+<p class="contagem rotulo">
+  @if (temFiltro()) {
+    <span class="num">{{ filtradas().length }}</span> de {{ todas().length }} músicas
+  } @else {
+    <span class="num">{{ todas().length }}</span> músicas · {{ explicitas() }} explícitas
+  }
+</p>
 
 @if (erro(); as msg) {
   <p class="erro">{{ msg }}</p>
 }
 
-<div class="cartao">
-  @if (carregando()) {
-    <p>Carregando músicas...</p>
-  } @else {
-    <table>
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Título</th>
-          <th>Explícito</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (musica of musicas(); track musica.id) {
-          <tr>
-            <td>{{ musica.id }}</td>
-            <td>{{ musica.titulo }}</td>
-            <td>{{ musica.explicito ? 'Sim' : 'Não' }}</td>
-            <td>
-              <button type="button" [disabled]="processandoId() === musica.id" (click)="reproduzir(musica)">
-                {{ processandoId() === musica.id ? 'Reproduzindo...' : 'Reproduzir' }}
-              </button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="4">
-              {{ termoBuscado() ? 'Nenhum resultado para "' + termoBuscado() + '".' : 'Nenhuma música encontrada.' }}
-            </td>
-          </tr>
+@if (player.erro(); as msg) {
+  <p class="erro">{{ msg }}</p>
+}
+
+@if (carregando()) {
+  <p class="rotulo">Carregando músicas...</p>
+} @else {
+  <ul class="lista">
+    @for (grupo of grupos(); track grupo.artista + grupo.faixas[0].id) {
+      <li class="grupo-cabeca">
+        <span>{{ grupo.artista }}</span>
+        <span class="num">{{ grupo.faixas.length }}</span>
+      </li>
+      @for (musica of grupo.faixas; track musica.id) {
+      <li class="faixa" [class.atual]="ehAtual(musica)">
+        <!-- A linha inteira é o alvo: clicar em qualquer ponto toca. O botão
+             separado de "Reproduzir" virava um alvo de 90px numa linha de
+             560px, e o resto da linha não fazia nada. -->
+        <button
+          type="button"
+          class="faixa-alvo"
+          [disabled]="player.pedindoId() === musica.id"
+          [attr.aria-label]="rotuloDe(musica)"
+          (click)="reproduzir(musica)">
+
+          <span class="arte">
+            @if (musica.capa) {
+              <img class="faixa-capa" [src]="musica.capa" alt="" loading="lazy" width="40" height="40" />
+            } @else {
+              <span class="faixa-capa vazia" aria-hidden="true">{{ inicialDe(musica) }}</span>
+            }
+
+            <!-- Selo sobre a capa: play no hover, medidor de verdade quando
+                 é a faixa que está tocando. -->
+            <span class="arte-selo" aria-hidden="true">
+              @if (player.pedindoId() === musica.id) {
+                <span class="girando"></span>
+              } @else if (ehAtual(musica) && player.tocando()) {
+                <span class="arte-medidor">
+                  @for (n of player.niveisCurtos(); track $index) {
+                    <i [style.transform]="'scaleY(' + (0.14 + n * 0.86) + ')'"></i>
+                  }
+                </span>
+              } @else if (ehAtual(musica)) {
+                <svg viewBox="0 0 16 16"><rect x="4" y="2.5" width="3" height="11" rx="1"/><rect x="9" y="2.5" width="3" height="11" rx="1"/></svg>
+              } @else {
+                <svg viewBox="0 0 16 16"><path d="M4.5 2.8v10.4a.7.7 0 0 0 1.07.6l8.2-5.2a.7.7 0 0 0 0-1.2L5.57 2.2a.7.7 0 0 0-1.07.6z"/></svg>
+              }
+            </span>
+          </span>
+
+          <span class="faixa-dados">
+            <span class="faixa-titulo">
+              {{ musica.titulo }}
+              @if (musica.explicito) {
+                <span class="explicito" title="Conteúdo explícito">E</span>
+              }
+            </span>
+            <span class="faixa-artista">{{ musica.artista || 'Artista desconhecido' }}</span>
+          </span>
+
+          @if (ehAtual(musica)) {
+            <span class="faixa-tempo num">{{ player.formatar(player.posicao()) }}</span>
+          }
+        </button>
+
+        @if (ehAtual(musica)) {
+          <!-- Onde a faixa está, na própria linha da lista. -->
+          <span class="faixa-progresso" aria-hidden="true"
+                [style.transform]="'scaleX(' + player.fracao() + ')'"></span>
         }
-      </tbody>
-    </table>
+      </li>
+      }
+    } @empty {
+      <li class="vazio">
+        @if (temFiltro()) {
+          Nenhuma música com esse filtro.
+        } @else {
+          Nenhuma música no catálogo ainda.
+        }
+      </li>
+    }
+  </ul>
+
+  @if (totalPaginas() > 1) {
+    <nav class="paginacao" aria-label="Páginas">
+      <button type="button" class="secundario" [disabled]="pagina() === 1" (click)="irPara(pagina() - 1)">Anterior</button>
+      <span class="rotulo num">Página {{ pagina() }} de {{ totalPaginas() }}</span>
+      <button type="button" class="secundario" [disabled]="pagina() === totalPaginas()" (click)="irPara(pagina() + 1)">Próxima</button>
+    </nav>
   }
-</div>
+}

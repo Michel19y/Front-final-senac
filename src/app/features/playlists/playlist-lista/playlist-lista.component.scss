@@ -1,36 +1,94 @@
+.cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-4);
+  flex-wrap: wrap;
+  max-width: 560px;
+
+  h2 {
+    margin-bottom: var(--e-4);
+  }
+}
+
 .criar {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  max-width: 420px;
+  gap: var(--e-2);
+  margin-bottom: var(--e-8);
+  max-width: 560px;
 
   input {
     flex: 1;
+    min-width: 0;
   }
 }
 
 .grade {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--e-4);
 }
 
 .playlist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-2);
   text-decoration: none;
   color: inherit;
-  transition: background-color 0.15s ease;
+}
 
-  &:hover {
-    background: var(--cor-superficie-hover);
+/* Quatro capas num quadrado. Com 1, 2 ou 3 elas se esticam para preencher —
+   buraco cinza no mosaico leria como imagem que não carregou. */
+.mosaico {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  aspect-ratio: 1;
+  gap: 1px;
+  border-radius: var(--raio-md);
+  overflow: hidden;
+  background: var(--chassi-alto);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
-  h3 {
-    margin: 0 0 0.25rem;
+  &[data-capas='1'] {
+    grid-template-columns: 1fr;
   }
 
-  p {
-    margin: 0;
-    color: var(--cor-texto-suave);
-    font-size: 0.85rem;
+  &[data-capas='3'] img:first-child {
+    grid-column: span 2;
   }
+}
+
+.mosaico-vazio {
+  grid-column: span 2;
+  display: grid;
+  place-items: center;
+  font-size: var(--t-xl);
+  font-weight: 700;
+  font-stretch: 80%;
+  color: var(--suave);
+}
+
+.playlist-dados {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.playlist-nome {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlist-conta {
+  font-size: var(--t-xs);
+  color: var(--suave);
 }

@@ -35,6 +35,8 @@ export interface LoginSucesso {
   nomeUsuario: string;
   email: string;
   planoId: number;
+  /** A API devolve no login; sem isso a foto sumiria a cada entrada. */
+  foto?: string | null;
 }
 
 export type LoginResponse = LoginPrecisaConfigurar2fa | LoginSucesso;
@@ -44,6 +46,8 @@ export interface UsuarioLogado {
   nomeUsuario: string;
   email: string;
   planoId: number;
+  /** URL da foto de perfil; ausente = sem foto. */
+  foto?: string | null;
 }
 
 export interface Musica {
@@ -51,12 +55,22 @@ export interface Musica {
   titulo: string;
   albumId?: number | null;
   explicito: boolean;
+  /** URL do arquivo de áudio; ausente = faixa sem áudio associado. */
+  urlAudio?: string | null;
+  /** Artista principal, vindo de join em track_artists. */
+  artista?: string | null;
+  /** URL da capa do álbum. */
+  capa?: string | null;
 }
 
 export interface Playlist {
   id: number;
   usuarioId: number;
   nomePlaylist: string;
+  /** Quantas faixas tem. Vem de projeção, não é coluna. */
+  totalFaixas?: number;
+  /** Até 4 capas, para o mosaico do cartão. */
+  capas?: string[];
 }
 
 export interface Dependente {
@@ -91,7 +105,14 @@ export interface MensagemResponse {
   mensagem: string;
 }
 
+/** A URL vem na resposta porque expira: o banco guarda só o id no Deezer. */
+export interface ReproducaoResponse extends MensagemResponse {
+  urlAudio?: string | null;
+}
+
 export interface ArtistaBusca {
   id: number;
   nomeArtista: string;
+  /** Quantas faixas do catálogo seriam cortadas ao bloquear este artista. */
+  faixas: number;
 }

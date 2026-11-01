@@ -1,8 +1,14 @@
-<h2>Playlists</h2>
+<div class="cabecalho">
+  <h2>Playlists</h2>
+  <span class="rotulo"><span class="num">{{ playlists().length }}</span> no total</span>
+</div>
 
 <div class="criar">
-  <input type="text" placeholder="Nome da nova playlist" [(ngModel)]="novoNome" (keyup.enter)="criar()" [disabled]="salvando()" />
-  <button type="button" (click)="criar()" [disabled]="salvando()">{{ salvando() ? 'Criando...' : 'Criar playlist' }}</button>
+  <input type="text" placeholder="Nome da nova playlist" aria-label="Nome da nova playlist"
+         [(ngModel)]="novoNome" (keyup.enter)="criar()" [disabled]="salvando()" />
+  <button type="button" class="estavel" (click)="criar()" [disabled]="salvando()">
+    {{ salvando() ? 'Criando...' : 'Criar' }}
+  </button>
 </div>
 
 @if (erro(); as msg) {
@@ -10,16 +16,30 @@
 }
 
 @if (carregando()) {
-  <p>Carregando playlists...</p>
+  <p class="rotulo">Carregando playlists...</p>
 } @else {
   <div class="grade">
     @for (playlist of playlists(); track playlist.id) {
-      <a class="cartao playlist" [routerLink]="['/playlists', playlist.id]">
-        <h3>{{ playlist.nomePlaylist }}</h3>
-        <p>Ver músicas</p>
+      <a class="playlist" [routerLink]="['/playlists', playlist.id]">
+        <!-- Mosaico das capas: dá cara à playlist sem precisar de arte própria.
+             Com menos de 4 faixas, as que houver preenchem o quadro. -->
+        <span class="mosaico" [attr.data-capas]="(playlist.capas || []).length" aria-hidden="true">
+          @for (capa of playlist.capas; track capa) {
+            <img [src]="capa" alt="" loading="lazy" />
+          } @empty {
+            <span class="mosaico-vazio">{{ playlist.nomePlaylist.charAt(0).toUpperCase() }}</span>
+          }
+        </span>
+
+        <span class="playlist-dados">
+          <span class="playlist-nome">{{ playlist.nomePlaylist }}</span>
+          <span class="playlist-conta num">
+            {{ playlist.totalFaixas || 0 }} {{ playlist.totalFaixas === 1 ? 'música' : 'músicas' }}
+          </span>
+        </span>
       </a>
     } @empty {
-      <p>Você ainda não tem playlists.</p>
+      <p class="vazio">Você ainda não tem playlists. Crie a primeira acima.</p>
     }
   </div>
 }

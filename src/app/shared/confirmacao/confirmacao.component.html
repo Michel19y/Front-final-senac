@@ -1,0 +1,12 @@
+<dialog #dialogo class="dialogo" (close)="aoFechar()" (click)="aoClicarNoFundo($event)">
+  <div class="dialogo-corpo">
+    <h3 class="dialogo-titulo">{{ titulo() }}</h3>
+    @if (mensagem()) {
+      <p class="dialogo-mensagem">{{ mensagem() }}</p>
+    }
+    <div class="dialogo-acoes">
+      <button type="button" class="secundario" (click)="cancelar.emit()">Cancelar</button>
+      <button type="button" [class.perigo]="destrutivo()" (click)="confirmar.emit()">{{ rotuloConfirmar() }}</button>
+    </div>
+  </div>
+</dialog>

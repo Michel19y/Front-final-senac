@@ -1,16 +1,58 @@
+/* =========================================================================
+   Spotifei Família — mesa de som da casa
+   Vocabulário visual: equipamento de áudio. Chassi de grafite quente,
+   texto cor de osso (serigrafia em metal), âmbar para nível, vermelho
+   de sinal para corte.
+   ========================================================================= */
+
 :root {
-  --cor-fundo: #121212;
-  --cor-superficie: #181818;
-  --cor-superficie-hover: #282828;
-  --cor-borda: #2a2a2a;
-  --cor-texto: #ffffff;
-  --cor-texto-suave: #b3b3b3;
-  --cor-destaque: #1db954;
-  --cor-destaque-hover: #1ed760;
-  --cor-erro: #f15e6c;
+  color-scheme: dark;
+
+  /* --- cor ------------------------------------------------------------ */
+  --fundo: #151411;
+  --chassi: #24221e;
+  --chassi-alto: #2e2b26;
+  --sulco: #3a362f;
+  --osso: #e8e3d6;
+  --suave: #918b7c;
+  --ambar: #e8a33d;
+  --ambar-fraco: #6b4a1a;
+  --sinal: #c8432f;
+  --sinal-fraco: #4a1d14;
+
+  /* --- tipografia ----------------------------------------------------- */
+  --fonte: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Escala 1.25 (terça maior), ancorada em 16px */
+  --t-xs: 0.75rem;
+  --t-sm: 0.875rem;
+  --t-base: 1rem;
+  --t-md: 1.25rem;
+  --t-lg: 1.5625rem;
+  --t-xl: 1.953rem;
+
+  /* --- espaço (escala de 4px) ------------------------------------------ */
+  --e-1: 0.25rem;
+  --e-2: 0.5rem;
+  --e-3: 0.75rem;
+  --e-4: 1rem;
+  --e-6: 1.5rem;
+  --e-8: 2rem;
+  --e-12: 3rem;
+
+  /* --- forma ----------------------------------------------------------- */
+  --raio-sm: 3px;
+  --raio-md: 6px;
+  --raio-pill: 999px;
+
+  /* --- movimento ------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -21,114 +63,757 @@ body {
 
 body {
   margin: 0;
-  background: var(--cor-fundo);
-  color: var(--cor-texto);
-  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--fundo);
+  color: var(--osso);
+  font-family: var(--fonte);
+  font-size: var(--t-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* Anel de foco: uma definicao so para o app. Estava repetida em cinco
+   componentes, e estado de acessibilidade nao deve divergir entre telas. */
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--ambar);
+  outline-offset: 2px;
+  border-radius: var(--raio-sm);
+}
+
+::selection {
+  background: var(--ambar);
+  color: #1a1612;
+}
+
+/* -------------------------------------------------------------------------
+   Tipografia
+   A voz de "painel de equipamento" vem da largura condensada e do tracking
+   apertado — nunca de caixa alta.
+   ------------------------------------------------------------------------- */
+
 h1, h2, h3 {
-  font-weight: 700;
+  font-weight: 600;
+  font-stretch: 88%;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: var(--t-xl);
+  margin: 0 0 var(--e-6);
+}
+
+h3 {
+  font-size: var(--t-md);
+  margin: 0 0 var(--e-3);
+}
+
+p {
+  max-width: 68ch;
 }
 
 a {
   color: inherit;
 }
 
+/* Números são conteúdo neste app (contagens, limites, horários).
+   Tabulares para não dançarem de largura ao atualizar. */
+.num,
+td,
+input[type='number'] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rótulo de painel: condensado e pequeno, em caixa de frase. */
+.rotulo {
+  font-size: var(--t-xs);
+  font-stretch: 80%;
+  letter-spacing: 0.01em;
+  color: var(--suave);
+}
+
+/* -------------------------------------------------------------------------
+   Botões
+   ------------------------------------------------------------------------- */
+
 button {
   cursor: pointer;
   font-family: inherit;
+  font-size: var(--t-sm);
   font-weight: 600;
-  border: none;
-  border-radius: 999px;
-  padding: 0.6rem 1.25rem;
-  background: var(--cor-destaque);
-  color: #000;
-  transition: background-color 0.15s ease, opacity 0.15s ease;
+  font-stretch: 88%;
+  border: 1px solid transparent;
+  border-radius: var(--raio-md);
+  padding: var(--e-2) var(--e-4);
+  background: var(--ambar);
+  color: #221806;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease,
+    transform 160ms var(--ease-out);
 
-  &:hover:not(:disabled) {
-    background: var(--cor-destaque-hover);
+  /* Feedback de pressão: a interface confirma que ouviu o clique. */
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ambar);
+    outline-offset: 2px;
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  button:hover:not(:disabled) {
+    background: #f2b254;
   }
 }
 
 button.secundario {
   background: transparent;
-  color: var(--cor-texto);
-  border: 1px solid var(--cor-borda);
+  color: var(--osso);
+  border-color: var(--sulco);
+}
 
-  &:hover:not(:disabled) {
-    background: var(--cor-superficie-hover);
+@media (hover: hover) and (pointer: fine) {
+  button.secundario:hover:not(:disabled) {
+    background: var(--chassi-alto);
+    border-color: var(--suave);
   }
 }
 
 button.perigo {
-  background: var(--cor-erro);
-  color: #fff;
+  background: transparent;
+  color: var(--sinal);
+  border-color: var(--sinal-fraco);
 }
+
+@media (hover: hover) and (pointer: fine) {
+  button.perigo:hover:not(:disabled) {
+    background: var(--sinal-fraco);
+    color: var(--osso);
+    border-color: var(--sinal);
+  }
+}
+
+/* Botões que trocam de rótulo enquanto carregam ("Buscar" -> "Buscando...")
+   mudariam de largura no meio do clique. */
+button.estavel {
+  min-width: 11ch;
+}
+
+/* -------------------------------------------------------------------------
+   Campos
+   ------------------------------------------------------------------------- */
 
 input,
 select {
-  background: var(--cor-superficie-hover);
-  border: 1px solid var(--cor-borda);
-  color: var(--cor-texto);
-  border-radius: 4px;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.95rem;
+  background: #1b1916;
+  border: 1px solid var(--sulco);
+  color: var(--osso);
+  border-radius: var(--raio-md);
+  padding: var(--e-2) var(--e-3);
+  font-size: var(--t-sm);
   font-family: inherit;
+  transition: border-color 150ms ease;
 
-  &:focus {
-    outline: 2px solid var(--cor-destaque);
+  &::placeholder {
+    color: #6d675c;
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--ambar);
+    outline-offset: 2px;
+    border-color: transparent;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+/* iOS Safari dá zoom na página ao focar um campo com fonte abaixo de 16px,
+   e depois do zoom a página passa a arrastar na horizontal. 16px no toque
+   elimina a causa; no mouse a densidade menor continua. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* O range nativo ignora a paleta e e feio nos dois motores. Fica no global
+   porque vale pra qualquer slider do app, nao so pro player. */
+input[type='range'] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  padding: 0;
+  border: none;
+  height: 1rem;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.4;
+  }
+
+  &::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--sulco);
+  }
+
+  &::-moz-range-track {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--sulco);
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+    margin-top: -4px;
+    border-radius: 50%;
+    background: var(--ambar);
+    border: none;
+  }
+
+  &::-moz-range-thumb {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--ambar);
+    border: none;
+  }
+}
+
+input[type='checkbox'] {
+  accent-color: var(--ambar);
 }
 
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 1rem;
+  gap: var(--e-1);
+  margin-bottom: var(--e-4);
 
   label {
-    font-size: 0.85rem;
-    color: var(--cor-texto-suave);
+    font-size: var(--t-xs);
+    font-stretch: 80%;
+    color: var(--suave);
   }
 }
 
+/* -------------------------------------------------------------------------
+   Superfícies
+   Cartão só para o que é de fato um objeto destacável. Densidade é
+   informação: listas e tabelas não ganham moldura.
+   ------------------------------------------------------------------------- */
+
 .cartao {
-  background: var(--cor-superficie);
-  border: 1px solid var(--cor-borda);
-  border-radius: 8px;
-  padding: 1.25rem;
+  background: var(--chassi);
+  border: 1px solid var(--sulco);
+  border-radius: var(--raio-md);
+  padding: var(--e-6);
+}
+
+/* Link de volta — usado em restrições, histórico e detalhe de playlist. */
+.voltar {
+  display: inline-block;
+  margin-bottom: var(--e-4);
+  color: var(--suave);
+  text-decoration: none;
+  font-size: var(--t-sm);
+  font-stretch: 88%;
+  border-bottom: 1px solid transparent;
+  transition: color 150ms ease, border-color 150ms ease;
+
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .voltar:hover {
+    color: var(--osso);
+    border-bottom-color: var(--sulco);
+  }
+}
+
+.erro,
+.sucesso {
+  font-size: var(--t-sm);
+  margin: var(--e-2) 0;
+  padding-left: var(--e-3);
+  border-left: 2px solid currentColor;
 }
 
 .erro {
-  color: var(--cor-erro);
-  font-size: 0.9rem;
-  margin: 0.5rem 0;
+  color: var(--sinal);
 }
 
 .sucesso {
-  color: var(--cor-destaque);
-  font-size: 0.9rem;
-  margin: 0.5rem 0;
+  color: var(--ambar);
+}
+
+/* -------------------------------------------------------------------------
+   Tabelas
+   ------------------------------------------------------------------------- */
+
+/* Área de escolha: tracejada porque é espaço a preencher. Com fila, vira
+   linha contínua em âmbar — o mesmo sinal de "ativo" do resto do app. */
+.area-arquivo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-1);
+  padding: var(--e-6) var(--e-4);
+  text-align: center;
+  cursor: pointer;
+  border: 1px dashed var(--sulco);
+  border-radius: var(--raio-md);
+  background: var(--chassi);
+  transition: border-color 150ms ease, background-color 150ms ease;
+
+  input[type='file'] {
+    /* Fora da tela, não display:none: continua focável pelo teclado. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--ambar);
+    outline-offset: 2px;
+  }
+
+  &.preenchida {
+    border-style: solid;
+    border-color: var(--ambar);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .area-arquivo:hover {
+    border-color: var(--suave);
+    background: var(--chassi-alto);
+  }
+}
+
+/* Miniatura de capa de album. Usada na lista de musicas e no player. */
+.faixa-capa {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--raio-sm);
+  object-fit: cover;
+  background: var(--chassi-alto);
+}
+
+/* Sem capa, mostra a inicial do artista: 300 quadrados cinzas vazios
+   viram ruido, e a letra ainda ajuda a varrer a lista com o olho. */
+.faixa-capa.vazia {
+  display: grid;
+  place-items: center;
+  font-size: var(--t-sm);
+  font-weight: 700;
+  font-stretch: 80%;
+  color: var(--suave);
+}
+
+/* Estado vazio: aparece em varias listas do app. */
+.vazio {
+  color: var(--suave);
+  font-size: var(--t-sm);
+}
+
+/* Spinner de espera. Generico: serve a qualquer botao em carregamento. */
+.girando {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: girar 700ms linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .girando { animation-duration: 2s; }
+}
+
+/* Barra de progresso generica. Mesma linguagem do medidor de reproducoes:
+   trilho escuro, nivel em ambar. */
+.progresso-trilho {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--sulco);
+  overflow: hidden;
+}
+
+.progresso-nivel {
+  height: 100%;
+  background: var(--ambar);
+  transition: width 200ms var(--ease-out);
+}
+
+/* Cores de estado, separadas do ambar de marca: dizem bom/ruim/neutro. */
+.ok { color: var(--ambar); }
+.ruim { color: var(--sinal); }
+.neutro { color: var(--suave); }
+
+/* Tabela larga rola dentro do próprio container. O corpo da página nunca
+   rola na horizontal — quando ele rola, elementos de largura 100% (a barra
+   do topo) param na borda da viewport e não acompanham o conteúdo. */
+.tabela-rolavel {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-
-  th, td {
-    text-align: left;
-    padding: 0.6rem 0.5rem;
-    border-bottom: 1px solid var(--cor-borda);
-  }
+  font-size: var(--t-sm);
 
   th {
-    color: var(--cor-texto-suave);
-    font-size: 0.8rem;
-    text-transform: uppercase;
+    text-align: left;
+    padding: var(--e-2) var(--e-3);
+    border-bottom: 1px solid var(--sulco);
+    color: var(--suave);
+    font-size: var(--t-xs);
+    font-stretch: 80%;
+    font-weight: 600;
   }
+
+  td {
+    text-align: left;
+    padding: var(--e-3);
+    border-bottom: 1px solid #2a2721;
+  }
+
+  tbody tr {
+    transition: background-color 120ms ease;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  table tbody tr:hover {
+    background: var(--chassi);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Medidor de nível — o elemento central do app
+   Enche em âmbar e vira vermelho de sinal ao se aproximar do limite.
+   A cor carrega informação, não decora.
+   ------------------------------------------------------------------------- */
+
+.medidor {
+  position: relative;
+  height: 36px;
+  border-radius: var(--raio-sm);
+  background: #302c26;
+  overflow: hidden;
+}
+
+.medidor-nivel {
+  height: 100%;
+  background: var(--ambar);
+  /* Só a largura anima: o preenchimento cresce da esquerda, como um VU. */
+  transition:
+    width 320ms var(--ease-out),
+    background-color 200ms ease;
+}
+
+.medidor-nivel.limite {
+  background: var(--sinal);
+}
+
+/* Os vãos entre segmentos são pintados POR CIMA do nível, com a cor do
+   fundo da página. Assim o medidor é segmentado sem precisar de um
+   elemento por segmento. */
+.medidor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0 calc(3.333% - 3px),
+    var(--chassi) calc(3.333% - 3px) 3.333%
+  );
+}
+
+.medidor.sem-limite {
+  background: transparent;
+  height: auto;
+}
+
+.medidor.sem-limite::after {
+  display: none;
+}
+
+.medidor-leitura {
+  display: flex;
+  align-items: baseline;
+  gap: var(--e-2);
+  margin-top: var(--e-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.medidor-valor {
+  font-size: var(--t-lg);
+  font-weight: 700;
+  font-stretch: 88%;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.medidor-de {
+  font-size: var(--t-sm);
+  color: var(--suave);
+}
+
+/* Marca de conteúdo explícito: um sinal, não a palavra "Sim". */
+.explicito {
+  display: inline-grid;
+  place-items: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: var(--raio-sm);
+  background: var(--sinal-fraco);
+  color: #f0a192;
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-stretch: 80%;
+  line-height: 1;
+}
+
+/* -------------------------------------------------------------------------
+   Acessibilidade
+   Movimento reduzido significa menos movimento, não zero transição:
+   cor e opacidade seguem ajudando a entender o que mudou.
+   ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  button:active:not(:disabled) {
+    transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Faixa tocando agora: âmbar, como o nível do medidor. */
+button.secundario.tocando {
+  border-color: var(--ambar);
+  color: var(--ambar);
+}
+
+/* -------------------------------------------------------------------------
+   Linha de faixa clicável — lista de músicas e detalhe de playlist
+   ------------------------------------------------------------------------- */
+
+/* A linha inteira como botão: sem fundo, sem borda, sem transform — tem que
+   continuar lendo como linha de lista e não como caixa clicável. */
+.faixa-alvo {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  width: 100%;
+  text-align: left;
+  padding: var(--e-2) var(--e-3);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: inherit;
+  font: inherit;
+  transition: background-color 140ms ease;
+
+  &:active {
+    transform: none;
+  }
+
+  &:disabled {
+    opacity: 1;
+    cursor: progress;
+  }
+}
+
+.faixa.atual .faixa-alvo {
+  background: rgb(232 163 61 / 0.06);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .faixa-alvo:hover {
+    background: var(--chassi);
+  }
+
+  .faixa-alvo:hover .arte-selo {
+    opacity: 1;
+  }
+
+  .faixa-alvo:hover .faixa-capa {
+    filter: brightness(0.45);
+  }
+}
+
+/* Capa + selo empilhados: o selo é a resposta visual ao clique. */
+.arte {
+  position: relative;
+  flex-shrink: 0;
+  display: block;
+  width: 40px;
+  height: 40px;
+}
+
+.faixa-capa {
+  transition: filter 140ms ease;
+}
+
+.arte-selo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--raio-sm);
+  color: var(--osso);
+  opacity: 0;
+  transition: opacity 140ms ease;
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    fill: currentColor;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.6));
+  }
+}
+
+/* Tocando: o selo fica aceso sozinho, sem depender do mouse. */
+.faixa.atual .arte-selo,
+.fila-item.atual .arte-selo {
+  opacity: 1;
+  background: rgb(21 20 17 / 0.55);
+  color: var(--ambar);
+}
+
+/* Medidor miniatura, alimentado pela mesma FFT do player. */
+.arte-medidor {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 16px;
+
+  i {
+    width: 3px;
+    height: 100%;
+    border-radius: 1px;
+    background: var(--ambar);
+    transform: scaleY(0.14);
+    transition: transform 70ms linear;
+  }
+}
+
+.faixa-tempo {
+  flex-shrink: 0;
+  font-size: var(--t-xs);
+  color: var(--ambar);
+}
+
+/* Progresso rente à borda de baixo da linha: dá para acompanhar a faixa
+   sem tirar os olhos da lista. */
+.faixa-progresso {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--ambar);
+  transform-origin: left;
+  transition: transform 220ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arte-medidor i,
+  .faixa-progresso,
+  .faixa-capa,
+  .arte-selo {
+    transition: none;
+  }
+}
+
+/* LED de chave liga/desliga — reprodução automática e restrições.
+   Estado antes do texto: a cor se lê de relance, a frase não. */
+.chave-led {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sulco);
+  transition: background-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
+}
+
+.chave-led.aceso {
+  background: var(--ambar);
+  box-shadow: 0 0 0 3px var(--ambar-fraco);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chave-led { transition: none; }
+}
+
+/* Bloco de texto da linha de faixa: título em cima, artista embaixo, os
+   dois cortados com reticências em vez de quebrarem a altura da linha. */
+.faixa-dados,
+.fila-dados {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.faixa-titulo,
+.faixa-artista,
+.fila-titulo,
+.fila-artista {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bloco, e nao flex: com display:flex o texto vira um item anonimo que
+   nao encolhe, e text-overflow:ellipsis nunca dispara — o titulo era
+   cortado no seco, sem as reticencias. */
+.faixa-titulo,
+.fila-titulo {
+  font-size: var(--t-sm);
+}
+
+.faixa-titulo .explicito,
+.fila-titulo .explicito {
+  margin-left: var(--e-2);
+  vertical-align: middle;
+}
+
+.faixa-artista,
+.fila-artista {
+  font-size: var(--t-xs);
+  color: var(--suave);
 }

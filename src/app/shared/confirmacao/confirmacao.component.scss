@@ -1,0 +1,77 @@
+.dialogo {
+  border: 1px solid var(--sulco);
+  border-radius: var(--raio-md);
+  background: var(--chassi);
+  color: var(--osso);
+  padding: 0;
+  width: min(26rem, calc(100vw - 2rem));
+
+  /* Nada no mundo real aparece do nada: entra de 0.96, não de 0. */
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 160ms var(--ease-out),
+    overlay 160ms allow-discrete,
+    display 160ms allow-discrete;
+
+  &[open] {
+    opacity: 1;
+    transform: scale(1);
+
+    @starting-style {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  &::backdrop {
+    background: rgb(10 9 7 / 0.6);
+    opacity: 0;
+    transition:
+      opacity 160ms var(--ease-out),
+      overlay 160ms allow-discrete,
+      display 160ms allow-discrete;
+  }
+
+  &[open]::backdrop {
+    opacity: 1;
+
+    @starting-style {
+      opacity: 0;
+    }
+  }
+}
+
+.dialogo-corpo {
+  padding: var(--e-6);
+}
+
+.dialogo-titulo {
+  margin: 0 0 var(--e-2);
+  font-size: var(--t-md);
+}
+
+.dialogo-mensagem {
+  margin: 0 0 var(--e-6);
+  font-size: var(--t-sm);
+  color: var(--suave);
+}
+
+.dialogo-acoes {
+  display: flex;
+  gap: var(--e-2);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogo,
+  .dialogo::backdrop {
+    transition: none;
+  }
+
+  .dialogo[open] {
+    transform: none;
+  }
+}

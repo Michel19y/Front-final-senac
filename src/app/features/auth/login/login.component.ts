@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { LogoComponent } from '../../../shared/logo/logo.component';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
@@ -8,7 +9,7 @@ import { LoginPrecisaConfigurar2fa } from '../../../core/models/models';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, LogoComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })

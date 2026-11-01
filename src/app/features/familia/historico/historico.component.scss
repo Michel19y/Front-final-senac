@@ -1,10 +1,15 @@
-.voltar {
-  display: inline-block;
-  margin-bottom: 1rem;
-  color: var(--cor-texto-suave);
-  text-decoration: none;
+table {
+  max-width: 560px;
+}
 
-  &:hover {
-    color: var(--cor-texto);
-  }
+/* O horário é referência, não o assunto: alinhado à direita e recuado. */
+.coluna-quando {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+  color: var(--suave);
+}
+
+.vazio {
+  color: var(--suave);
 }

@@ -1,0 +1,81 @@
+@if (player.faixa(); as f) {
+  <div
+    class="player"
+    [class.arrastando]="arrastando()"
+    [style.--y]="estiloPainel"
+    role="region"
+    aria-label="Reprodução">
+
+    <!-- Puxador: a faixa âmbar vira o alvo do arraste. Área de toque larga
+         em volta do traço, que sozinho teria 4px e seria impossível pegar. -->
+    <button
+      type="button"
+      class="puxador"
+      [attr.aria-expanded]="aberto()"
+      aria-label="Arraste para abrir ou fechar o player"
+      (pointerdown)="comecarArraste($event)"
+      (pointermove)="moverArraste($event)"
+      (pointerup)="terminarArraste($event)"
+      (pointercancel)="terminarArraste($event)"
+      (click)="alternarPainel()">
+      <span class="puxador-traco" aria-hidden="true"></span>
+    </button>
+
+    <!-- Barra compacta: é o que fica à mostra com o painel fechado. -->
+    <div class="compacta">
+      @if (f.capa) {
+        <img class="faixa-capa arte" [src]="f.capa" [alt]="'Capa de ' + f.titulo" width="56" height="56" />
+      } @else {
+        <span class="faixa-capa vazia arte" aria-hidden="true">{{ (f.artista || f.titulo).charAt(0) }}</span>
+      }
+
+      <div class="info">
+        <p class="titulo">
+          {{ f.titulo }}
+          @if (f.explicito) {
+            <span class="explicito" title="Conteúdo explícito" aria-label="Conteúdo explícito">E</span>
+          }
+        </p>
+        <p class="artista">{{ f.artista || 'Artista desconhecido' }}</p>
+
+        @if (player.niveis().length) {
+          <div class="medidor-player" aria-hidden="true">
+            @for (n of player.niveis(); track $index) {
+              <i [style.transform]="'scaleY(' + (0.08 + n * 0.92) + ')'"></i>
+            }
+          </div>
+        }
+      </div>
+
+      <button
+        type="button"
+        class="botao-tocar"
+        [attr.aria-label]="player.tocando() ? 'Pausar' : 'Tocar'"
+        (click)="player.alternar()">
+        @if (player.carregando()) {
+          <span class="girando" aria-hidden="true"></span>
+        } @else if (player.tocando()) {
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="2.5" width="3" height="11" rx="1"/><rect x="9" y="2.5" width="3" height="11" rx="1"/></svg>
+        } @else {
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.8v10.4a.7.7 0 0 0 1.07.6l8.2-5.2a.7.7 0 0 0 0-1.2L5.57 2.2a.7.7 0 0 0-1.07.6z"/></svg>
+        }
+      </button>
+
+      <button type="button" class="fechar" aria-label="Fechar player" (click)="player.fechar()">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+
+      <div class="trilha">
+        <span class="tempo num">{{ player.formatar(player.posicao()) }}</span>
+        <input class="barra" type="range" min="0" [max]="player.duracao() || 0" step="0.5"
+               [value]="player.posicao()" [disabled]="!player.duracao()"
+               aria-label="Posição da faixa" (input)="aoArrastar($event)" />
+        <span class="tempo num">-{{ player.formatar(player.restante()) }}</span>
+      </div>
+    </div>
+
+    @if (aberto()) {
+      <app-player-palco (sair)="sairComAnimacao()" />
+    }
+  </div>
+}

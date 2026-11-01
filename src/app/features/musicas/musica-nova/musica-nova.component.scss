@@ -1,0 +1,122 @@
+:host {
+  display: block;
+  max-width: 720px;
+}
+
+.arquivo-nome {
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+
+.arquivo-info {
+  font-size: var(--t-xs);
+  color: var(--suave);
+}
+
+.resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-4);
+  margin: var(--e-4) 0;
+  font-size: var(--t-sm);
+  color: var(--suave);
+}
+
+/* Lista densa: com dezenas de itens, cartão por linha viraria um muro. */
+.fila {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--sulco);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  padding: var(--e-2) 0;
+  border-bottom: 1px solid #2a2721;
+
+  &[data-situacao='pronta'] { opacity: 0.55; }
+  &[data-situacao='ignorada'] { opacity: 0.55; }
+}
+
+.item-campos {
+  display: flex;
+  gap: var(--e-2);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Campos sem moldura: são dezenas na tela, e borda em cada um faria
+   a lista parecer um formulário gigante em vez de uma fila. */
+.campo-linha {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  padding: var(--e-1) 0;
+
+  &:hover:not(:disabled) { border-bottom-color: var(--sulco); }
+  &:focus-visible { border-bottom-color: var(--ambar); outline: none; }
+  &:disabled { opacity: 1; color: var(--suave); }
+}
+
+.item-estado {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  flex-shrink: 0;
+  font-size: var(--t-xs);
+  min-width: 7rem;
+  justify-content: flex-end;
+}
+
+/* So a largura: o visual da barra vem do global. */
+.progresso-trilho {
+  width: 3.5rem;
+}
+
+.explicito-linha {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  color: var(--suave);
+
+  input { margin: 0; }
+}
+
+.remover {
+  background: transparent;
+  border-color: transparent;
+  color: var(--suave);
+  padding: 0 var(--e-2);
+  font-size: var(--t-md);
+  line-height: 1;
+}
+
+.acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  flex-wrap: wrap;
+  margin-top: var(--e-4);
+}
+
+@media (max-width: 720px) {
+  /* Em tela estreita os campos empilham: lado a lado ficariam ilegíveis. */
+  .item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--e-1);
+  }
+
+  .item-estado {
+    justify-content: flex-start;
+  }
+}

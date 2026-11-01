@@ -3,5 +3,10 @@
     "target": "https://localhost:7288",
     "secure": false,
     "changeOrigin": true
+  },
+  "/audio": {
+    "target": "https://localhost:7288",
+    "secure": false,
+    "changeOrigin": true
   }
 }

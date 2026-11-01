@@ -1,4 +1,4 @@
-<a class="voltar" routerLink="/familia">&larr; Voltar para a família</a>
+<a class="voltar" routerLink="/familia">Voltar para a família</a>
 
 <h2>Controle parental</h2>
 
@@ -7,68 +7,147 @@
 }
 
 @if (carregando()) {
-  <p>Carregando restrições...</p>
+  <p class="rotulo">Carregando restrições...</p>
 } @else {
-  <div class="cartao secao">
-    <h3>Conteúdo explícito</h3>
-    <p>Status atual: <strong>{{ explicitoBloqueado() ? 'Bloqueado' : 'Permitido' }}</strong></p>
-    <button type="button" [class.perigo]="!explicitoBloqueado()" [disabled]="salvandoExplicito()" (click)="alternarExplicito()">
-      {{ salvandoExplicito() ? 'Salvando...' : (explicitoBloqueado() ? 'Permitir conteúdo explícito' : 'Bloquear conteúdo explícito') }}
-    </button>
-  </div>
 
-  <div class="cartao secao">
-    <h3>Limite diário de reproduções</h3>
+  <!-- O medidor é a coisa que se vê primeiro: é o que este app tem de próprio. -->
+  <section class="painel painel-nivel">
     @if (limite(); as l) {
-      <p>Reproduzidas hoje: {{ l.reproduzidasHoje }}</p>
+      @if (l.limiteDiario) {
+        <div class="medidor">
+          <div
+            class="medidor-nivel"
+            [class.limite]="l.reproduzidasHoje >= l.limiteDiario"
+            [style.width.%]="l.reproduzidasHoje >= l.limiteDiario ? 100 : (l.reproduzidasHoje * 100 / l.limiteDiario)">
+          </div>
+        </div>
+        <div class="medidor-leitura">
+          <span class="medidor-valor">{{ l.reproduzidasHoje }}</span>
+          <span class="medidor-de">de {{ l.limiteDiario }} reproduções hoje</span>
+        </div>
+        @if (l.reproduzidasHoje >= l.limiteDiario) {
+          <p class="aviso-limite">Limite atingido. Novas reproduções serão recusadas até amanhã.</p>
+        }
+      } @else {
+        <div class="medidor-leitura">
+          <span class="medidor-valor">{{ l.reproduzidasHoje }}</span>
+          <span class="medidor-de">reproduções hoje, sem limite definido</span>
+        </div>
+      }
     }
-    <div class="linha">
-      <input type="number" min="0" placeholder="Sem limite" [(ngModel)]="novoLimite" [disabled]="salvandoLimite()" />
-      <button type="button" (click)="salvarLimite()" [disabled]="salvandoLimite()">{{ salvandoLimite() ? 'Salvando...' : 'Salvar limite' }}</button>
-    </div>
-  </div>
 
-  <div class="cartao secao">
-    <h3>Artistas bloqueados</h3>
-    <div class="linha">
-      <input type="text" placeholder="Nome do artista" [(ngModel)]="nomeArtistaBusca" (keyup.enter)="buscarArtistas()" [disabled]="buscandoArtistas()" />
-      <button type="button" (click)="buscarArtistas()" [disabled]="buscandoArtistas()">{{ buscandoArtistas() ? 'Buscando...' : 'Buscar artista' }}</button>
+    <div class="linha definir-limite">
+      <input
+        type="number"
+        min="0"
+        placeholder="Sem limite"
+        aria-label="Novo limite diário de reproduções"
+        [(ngModel)]="novoLimite"
+        [disabled]="salvandoLimite()" />
+      <button type="button" class="secundario estavel" (click)="salvarLimite()" [disabled]="salvandoLimite()">
+        {{ salvandoLimite() ? 'Salvando...' : 'Definir limite' }}
+      </button>
+    </div>
+  </section>
+
+  <section class="painel">
+    <div class="painel-cabeca">
+      <h3>Conteúdo explícito</h3>
+      <span class="selo" [class.cortado]="explicitoBloqueado()">
+        <span class="chave-led" [class.cortado]="explicitoBloqueado()" aria-hidden="true"></span>
+        {{ explicitoBloqueado() ? 'Bloqueado' : 'Permitido' }}
+      </span>
     </div>
 
-    @if (resultadosArtistas().length) {
-      <ul class="resultados-busca">
+    <p class="rotulo">
+      @if (explicitasNoCatalogo() === 0) {
+        Nenhuma faixa do catálogo está marcada como explícita hoje, então esta
+        chave não corta nada por enquanto.
+      } @else {
+        Vale para <span class="num">{{ explicitasNoCatalogo() }}</span> faixas marcadas como explícitas.
+      }
+    </p>
+
+    <button
+      type="button"
+      class="acao-chave"
+      [class.perigo]="!explicitoBloqueado()"
+      [class.secundario]="explicitoBloqueado()"
+      [disabled]="salvandoExplicito()"
+      (click)="alternarExplicito()">
+      {{ salvandoExplicito() ? 'Salvando...' : (explicitoBloqueado() ? 'Permitir de novo' : 'Bloquear explícito') }}
+    </button>
+  </section>
+
+  <section class="painel">
+    <div class="painel-cabeca">
+      <h3>Artistas cortados</h3>
+      <span class="selo" [class.cortado]="artistasBloqueados().length > 0">
+        <span class="chave-led" [class.cortado]="artistasBloqueados().length > 0" aria-hidden="true"></span>
+        {{ artistasBloqueados().length }}
+      </span>
+    </div>
+
+    <!-- Busca enquanto digita: pedir para apertar "Buscar" faz uma tela de
+         ajuste virar um formulário, e esconde o acerto do nome. -->
+    <input
+      type="search"
+      class="busca"
+      placeholder="Procurar artista pelo nome"
+      aria-label="Procurar artista para bloquear"
+      [ngModel]="termoArtista()"
+      (ngModelChange)="termoArtista.set($event)" />
+
+    @if (buscandoArtistas()) {
+      <p class="rotulo">Procurando...</p>
+    } @else if (termoArtista().trim().length >= 2) {
+      <ul class="lista-artistas">
         @for (artista of resultadosArtistas(); track artista.id) {
-          <li>
-            <span>{{ artista.nomeArtista }}</span>
-            <button type="button" class="secundario" [disabled]="bloqueandoArtistaId() === artista.id" (click)="bloquearArtista(artista)">
-              {{ bloqueandoArtistaId() === artista.id ? 'Bloqueando...' : 'Bloquear' }}
-            </button>
+          <li class="artista">
+            <span class="artista-inicial" aria-hidden="true">{{ inicialDe(artista.nomeArtista) }}</span>
+            <span class="artista-dados">
+              <span class="artista-nome">{{ artista.nomeArtista }}</span>
+              <span class="artista-faixas rotulo">
+                @if (artista.faixas === 0) {
+                  sem faixas no catálogo
+                } @else {
+                  <span class="num">{{ artista.faixas }}</span>
+                  {{ artista.faixas === 1 ? 'faixa' : 'faixas' }}
+                }
+              </span>
+            </span>
+
+            @if (jaBloqueado(artista.id)) {
+              <span class="ja-cortado">Já cortado</span>
+            } @else {
+              <button type="button" class="secundario estavel"
+                      [disabled]="bloqueandoArtistaId() === artista.id || artista.faixas === 0"
+                      [title]="artista.faixas === 0 ? 'Este artista não tem faixas no catálogo' : ''"
+                      (click)="bloquearArtista(artista)">
+                {{ bloqueandoArtistaId() === artista.id ? 'Cortando...' : 'Cortar' }}
+              </button>
+            }
           </li>
+        } @empty {
+          <li class="vazio">Nenhum artista com esse nome.</li>
         }
       </ul>
     }
 
-    <table>
-      <thead>
-        <tr>
-          <th>Artista</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (restricao of artistasBloqueados(); track restricao.id) {
-          <tr>
-            <td>{{ restricao.nomeArtista ?? restricao.artistaId }}</td>
-            <td>
-              <button type="button" class="secundario" [disabled]="desbloqueandoArtistaId() === restricao.artistaId" (click)="desbloquearArtista(restricao)">
-                {{ desbloqueandoArtistaId() === restricao.artistaId ? 'Desbloqueando...' : 'Desbloquear' }}
-              </button>
-            </td>
-          </tr>
-        } @empty {
-          <tr><td colspan="2">Nenhum artista bloqueado.</td></tr>
-        }
-      </tbody>
-    </table>
-  </div>
+    <ul class="lista-cortes">
+      @for (restricao of artistasBloqueados(); track restricao.id) {
+        <li>
+          <span class="chave-led cortado" aria-hidden="true"></span>
+          <span class="corte-nome">{{ restricao.nomeArtista ?? restricao.artistaId }}</span>
+          <button type="button" class="secundario estavel"
+                  [disabled]="desbloqueandoArtistaId() === restricao.artistaId"
+                  (click)="desbloquearArtista(restricao)">
+            {{ desbloqueandoArtistaId() === restricao.artistaId ? 'Liberando...' : 'Liberar' }}
+          </button>
+        </li>
+      } @empty {
+        <li class="vazio">Nenhum artista cortado. Procure acima para cortar um.</li>
+      }
+    </ul>
+  </section>
 }

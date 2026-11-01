@@ -1,0 +1,235 @@
+:host {
+  display: block;
+  max-width: 560px;
+}
+
+.secao {
+  padding-bottom: var(--e-6);
+  margin-bottom: var(--e-6);
+  border-bottom: 1px solid var(--sulco);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  h3 {
+    margin-top: 0;
+  }
+}
+
+.foto-linha {
+  display: flex;
+  align-items: center;
+  gap: var(--e-4);
+}
+
+/* Fora da tela, não display:none: continua focável e acionável. */
+.arquivo-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Redondo e grande: é a prévia e o atalho para ver a foto inteira. */
+.avatar {
+  position: relative;
+  flex-shrink: 0;
+  width: 6rem;
+  height: 6rem;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: zoom-in;
+  background: var(--chassi-alto);
+  border: 2px solid var(--sulco);
+  display: grid;
+  place-items: center;
+  transition: border-color 150ms ease;
+
+  &:active {
+    transform: none;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &.enviando img {
+    opacity: 0.4;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .avatar:hover {
+    border-color: var(--ambar);
+  }
+}
+
+.avatar-inicial {
+  font-size: var(--t-xl);
+  font-weight: 700;
+  font-stretch: 80%;
+  color: var(--suave);
+}
+
+.avatar-carga {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--ambar);
+  background: rgb(21 20 17 / 0.55);
+}
+
+.foto-texto {
+  min-width: 0;
+
+  p {
+    margin: var(--e-2) 0 0;
+  }
+}
+
+/* Visor da foto: fundo escuro e a imagem no maior tamanho que couber, sem
+   recorte — o avatar já mostra a versão cortada em círculo. */
+.visor {
+  padding: 0;
+  border: 1px solid var(--sulco);
+  border-radius: var(--raio-md);
+  background: var(--chassi);
+  color: var(--osso);
+  max-width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 4rem);
+
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 160ms var(--ease-out),
+    overlay 160ms allow-discrete,
+    display 160ms allow-discrete;
+
+  &[open] {
+    opacity: 1;
+    transform: scale(1);
+
+    @starting-style {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  &::backdrop {
+    background: rgb(10 9 7 / 0.72);
+    opacity: 0;
+    transition:
+      opacity 160ms var(--ease-out),
+      overlay 160ms allow-discrete,
+      display 160ms allow-discrete;
+  }
+
+  &[open]::backdrop {
+    opacity: 1;
+
+    @starting-style {
+      opacity: 0;
+    }
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    /* Desconta a faixa de ações para a imagem nunca empurrar o rodapé
+       para fora da tela em telefone deitado. */
+    max-height: calc(100dvh - 9rem);
+    object-fit: contain;
+    margin: 0 auto;
+  }
+}
+
+.visor-acoes {
+  display: flex;
+  gap: var(--e-2);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding: var(--e-3) var(--e-4);
+  border-top: 1px solid var(--sulco);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visor,
+  .visor::backdrop {
+    transition: none;
+  }
+
+  .visor[open] {
+    transform: none;
+  }
+}
+
+.progresso-trilho {
+  margin-top: var(--e-2);
+  width: 10rem;
+}
+
+.linha {
+  display: flex;
+  gap: var(--e-2);
+  margin-bottom: var(--e-2);
+
+  input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Mesma chave com LED das restrições: o estado se lê antes do texto. */
+.chave {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-3);
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border-color: var(--sulco);
+  color: var(--suave);
+  font-weight: 500;
+
+  &.ligado {
+    color: var(--osso);
+    border-color: var(--ambar);
+  }
+
+  .dica {
+    display: block;
+    font-size: var(--t-xs);
+    color: var(--suave);
+    font-weight: 400;
+  }
+}
+
+.dados {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--e-2) var(--e-4);
+  margin: 0 0 var(--e-3);
+
+  dd {
+    margin: 0;
+    font-size: var(--t-sm);
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Os recados ficam no topo, longe do controle que os gerou: precisam de
+   espaço próprio para não colarem no título da primeira seção. */
+:host > .erro,
+:host > .sucesso {
+  margin: var(--e-4) 0 var(--e-6);
+}

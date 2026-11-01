@@ -1,0 +1,416 @@
+/* O host precisa ser o item flex do painel. Sem isto ele fica inline
+   (padrao do Angular) e o flex:1 nao se aplica a nada. */
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Duas colunas. A da direita tem largura fixa porque é uma lista: deixá-la
+   elástica só alargaria texto que já cabe. */
+.console {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) min(22rem, 36%);
+  overflow: hidden;
+}
+
+/* A capa, enorme e borrada, atrás de tudo: a tela assume a cor da música.
+   Opacidade baixa de propósito — é ambiente, não ilustração. */
+.brilho {
+  position: absolute;
+  inset: -20%;
+  background-image: var(--arte);
+  background-size: cover;
+  background-position: center;
+  filter: blur(80px) saturate(1.4);
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.console-sair {
+  position: absolute;
+  top: var(--e-2);
+  left: var(--e-3);
+  z-index: 2;
+  padding: var(--e-2);
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border-color: transparent;
+  color: var(--suave);
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+/* ---------------------------------------------------------------- estúdio */
+
+.estudio {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center;
+  gap: var(--e-4);
+  min-height: 0;
+  padding: var(--e-6) var(--e-6) calc(var(--e-6) + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.estudio::-webkit-scrollbar {
+  display: none;
+}
+
+.capa {
+  flex-shrink: 0;
+  width: min(24rem, 44vh);
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--raio-md);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.5);
+
+  &.vazia {
+    display: grid;
+    place-items: center;
+    background: var(--chassi-alto);
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--suave);
+  }
+}
+
+.texto {
+  text-align: center;
+  max-width: 24rem;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--e-2);
+    margin: 0;
+    font-size: var(--t-md);
+  }
+
+  p {
+    margin: var(--e-1) 0 0;
+    color: var(--suave);
+    font-size: var(--t-sm);
+  }
+}
+
+/* Espectro, não bloco: barras finas espalhadas pela largura da capa.
+   Com 18 barras de 17px o medidor virava um muro de tijolos, e as bandas
+   fracas sumiam num traço de 1px. */
+.espectro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 2.25rem;
+  width: min(24rem, 44vh);
+
+  i {
+    flex: 1;
+    max-width: 4px;
+    height: 100%;
+    background: var(--ambar);
+    border-radius: 2px;
+    transform-origin: center;
+    transform: scaleY(0.08);
+    transition: transform 80ms linear;
+  }
+}
+
+.trilha {
+  width: min(24rem, 44vh);
+
+  .barra {
+    width: 100%;
+  }
+}
+
+.tempos {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--e-1);
+  font-size: var(--t-xs);
+  color: var(--suave);
+}
+
+.controles {
+  display: flex;
+  align-items: center;
+  gap: var(--e-6);
+}
+
+.passo {
+  background: transparent;
+  border-color: transparent;
+  color: var(--osso);
+  padding: var(--e-2);
+  display: grid;
+  place-items: center;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: currentColor;
+  }
+
+  &:disabled {
+    color: var(--sulco);
+  }
+}
+
+.tocar {
+  width: 4rem;
+  height: 4rem;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: currentColor;
+  }
+}
+
+.rodape {
+  display: flex;
+  align-items: center;
+  gap: var(--e-4);
+  width: min(24rem, 44vh);
+}
+
+.automatico {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  background: transparent;
+  border-color: var(--sulco);
+  color: var(--suave);
+  font-size: var(--t-xs);
+  padding: var(--e-2) var(--e-3);
+  white-space: nowrap;
+
+  &.ligado {
+    color: var(--osso);
+    border-color: var(--ambar);
+  }
+}
+
+.volume {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  flex: 1;
+  min-width: 0;
+  color: var(--suave);
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    fill: currentColor;
+  }
+
+  .barra {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ------------------------------------------------------------------- fila */
+
+.fila {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--sulco);
+  background: rgb(21 20 17 / 0.4);
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--e-3);
+    padding: var(--e-4) var(--e-4) var(--e-3);
+    border-bottom: 1px solid var(--sulco);
+
+    h4 {
+      margin: 0;
+      font-size: var(--t-sm);
+    }
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: var(--e-2) 0;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    overscroll-behavior: contain;
+  }
+}
+
+.fila-item .faixa-alvo {
+  padding-right: var(--e-4);
+}
+
+/* Cabecalho de trecho: separa "o que toca" do "o que vem", que era o
+   que faltava para a fila nao ser 317 linhas indistintas. */
+.fila-grupo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-2);
+  padding: var(--e-3) var(--e-4) var(--e-1);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--suave);
+}
+
+.fila-marca-ordem {
+  color: var(--ambar);
+  font-weight: 500;
+}
+
+.fila-resto {
+  padding: var(--e-3) var(--e-4);
+  text-align: center;
+}
+
+/* A faixa atual nao e botao: clicar nela nao leva a lugar nenhum. */
+.fila-item.atual .faixa-alvo {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  width: 100%;
+  padding: var(--e-2) var(--e-4) var(--e-2) var(--e-2);
+  background: rgb(232 163 61 / 0.08);
+  box-shadow: inset 2px 0 0 var(--ambar);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fila-item .faixa-alvo:hover {
+    background: var(--chassi-alto);
+  }
+}
+
+.fila-item.atual .fila-titulo {
+  color: var(--ambar);
+  font-weight: 600;
+}
+
+.fila-vazia {
+  padding: var(--e-4);
+}
+
+/* Tela estreita NÃO empilha: as duas colunas continuam lado a lado e só
+   encolhem. A fila à direita é o que faz o console ser console. */
+@media (max-width: 860px) {
+  .console {
+    grid-template-columns: minmax(0, 1fr) min(16rem, 42%);
+  }
+
+  .estudio {
+    padding: var(--e-4) var(--e-3) calc(var(--e-4) + env(safe-area-inset-bottom, 0px));
+    gap: var(--e-3);
+  }
+
+  .capa {
+    width: min(14rem, 26vh);
+  }
+
+  .espectro,
+  .trilha,
+  .rodape {
+    width: 100%;
+    max-width: 16rem;
+  }
+
+  .controles {
+    gap: var(--e-4);
+  }
+
+  .fila header {
+    padding: var(--e-3);
+  }
+}
+
+/* Celular de pé: o que sobra de largura é pouco, então o palco perde peso
+   antes da fila — ela é a metade que o usuário pediu para ficar à vista. */
+@media (max-width: 560px) {
+  .console {
+    grid-template-columns: minmax(0, 1fr) 46%;
+  }
+
+  .console-sair {
+    top: 0;
+    left: var(--e-1);
+  }
+
+  .capa {
+    width: min(9rem, 20vh);
+  }
+
+  .espectro {
+    height: 1.5rem;
+  }
+
+  .texto h3 {
+    font-size: var(--t-base);
+  }
+
+  .tocar {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .passo svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Emendar e volume um sobre o outro: lado a lado em 180px o controle de
+     volume ficaria com menos curso que a espessura do dedo. */
+  .rodape {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--e-2);
+  }
+
+  .fila-item .faixa-alvo {
+    gap: var(--e-2);
+    padding: var(--e-2) var(--e-3) var(--e-2) var(--e-2);
+  }
+
+  .fila .faixa-capa {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .fila header h4 {
+    font-size: var(--t-xs);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .espectro i,
+  .chave-led {
+    transition: none;
+  }
+}

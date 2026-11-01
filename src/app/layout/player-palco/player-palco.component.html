@@ -1,0 +1,176 @@
+@if (player.faixa(); as f) {
+  <!-- Duas colunas: o que toca à esquerda, para onde vai à direita. A tela
+       não é coberta por uma cortina — ela vira a mesa de som. -->
+  <div class="console" [style.--arte]="fundo()">
+    <div class="brilho" aria-hidden="true"></div>
+
+    <button type="button" class="console-sair" aria-label="Fechar player" (click)="sair.emit()">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+
+    <section class="estudio" aria-label="Tocando agora">
+      @if (f.capa) {
+        <img class="capa" [src]="f.capa" [alt]="'Capa de ' + f.titulo" />
+      } @else {
+        <span class="capa vazia" aria-hidden="true">{{ (f.artista || f.titulo).charAt(0) }}</span>
+      }
+
+      <div class="texto">
+        <h3>
+          {{ f.titulo }}
+          @if (f.explicito) {
+            <span class="explicito" title="Conteúdo explícito">E</span>
+          }
+        </h3>
+        <p>{{ f.artista || 'Artista desconhecido' }}</p>
+      </div>
+
+      @if (player.niveis().length) {
+        <div class="espectro" aria-hidden="true">
+          @for (n of player.niveis(); track $index) {
+            <i [style.transform]="'scaleY(' + (0.08 + n * 0.92) + ')'"></i>
+          }
+        </div>
+      }
+
+      <div class="trilha">
+        <input class="barra" type="range" min="0" [max]="player.duracao() || 0" step="0.5"
+               [value]="player.posicao()" [disabled]="!player.duracao()"
+               aria-label="Posição da faixa" (input)="aoArrastar($event)" />
+        <div class="tempos">
+          <span class="num">{{ player.formatar(player.posicao()) }}</span>
+          <span class="num">-{{ player.formatar(player.restante()) }}</span>
+        </div>
+      </div>
+
+      <div class="controles">
+        <button type="button" class="passo" aria-label="Faixa anterior"
+                [disabled]="!player.faixaAnterior()" (click)="player.anterior()">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.2 3a.7.7 0 0 0-1.07-.6L5 6.1V3a.7.7 0 0 0-1.4 0v10a.7.7 0 0 0 1.4 0V9.9l6.13 3.7A.7.7 0 0 0 12.2 13V3z"/></svg>
+        </button>
+
+        <button type="button" class="tocar"
+                [attr.aria-label]="player.tocando() ? 'Pausar' : 'Tocar'"
+                (click)="player.alternar()">
+          @if (player.carregando()) {
+            <span class="girando" aria-hidden="true"></span>
+          } @else if (player.tocando()) {
+            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="2.5" width="3" height="11" rx="1"/><rect x="9" y="2.5" width="3" height="11" rx="1"/></svg>
+          } @else {
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.8v10.4a.7.7 0 0 0 1.07.6l8.2-5.2a.7.7 0 0 0 0-1.2L5.57 2.2a.7.7 0 0 0-1.07.6z"/></svg>
+          }
+        </button>
+
+        <button type="button" class="passo" aria-label="Próxima faixa"
+                [disabled]="!player.proximaFaixa()" (click)="player.proxima()">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.8 3a.7.7 0 0 1 1.07-.6L11 6.1V3a.7.7 0 0 1 1.4 0v10a.7.7 0 0 1-1.4 0V9.9l-6.13 3.7A.7.7 0 0 1 3.8 13V3z"/></svg>
+        </button>
+      </div>
+
+      <div class="rodape">
+        <button type="button" class="automatico" [class.ligado]="player.automatico()"
+                [attr.aria-pressed]="player.automatico()" (click)="player.alternarAutomatico()">
+          <span class="chave-led" [class.aceso]="player.automatico()" aria-hidden="true"></span>
+          Emendar
+        </button>
+
+        <button type="button" class="automatico" [class.ligado]="player.aleatorio()"
+                [attr.aria-pressed]="player.aleatorio()" title="Tocar em ordem aleatória"
+                (click)="player.alternarAleatorio()">
+          <span class="chave-led" [class.aceso]="player.aleatorio()" aria-hidden="true"></span>
+          Aleatório
+        </button>
+
+        <div class="volume">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.2 2.6 4 5.3H2a.8.8 0 0 0-.8.8v3.8c0 .44.36.8.8.8h2l3.2 2.7a.6.6 0 0 0 1-.46V3.06a.6.6 0 0 0-1-.46z"/><path d="M10.4 5.4a3.2 3.2 0 0 1 0 5.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input class="barra" type="range" min="0" max="1" step="0.05"
+                 [value]="player.volume()" aria-label="Volume" (input)="aoMudarVolume($event)" />
+        </div>
+      </div>
+    </section>
+
+    <aside class="fila" aria-label="Fila de reprodução">
+      <header>
+        <h4>Na fila</h4>
+        <!-- No aleatório a posição é o lugar na permutação, que começa em
+             qualquer número e não quer dizer nada para quem lê. -->
+        @if (player.aleatorio()) {
+          <span class="rotulo num">{{ player.fila().length }} faixas</span>
+        } @else if (player.posicaoNaFila() > 0) {
+          <span class="rotulo num">{{ player.posicaoNaFila() }} de {{ player.fila().length }}</span>
+        }
+      </header>
+
+      <!-- A fila é "o que vem agora", não o catálogo inteiro em ordem: com
+           317 linhas seguidas não dava para ver onde a reprodução está. -->
+      <ul>
+        <li class="fila-grupo">Tocando agora</li>
+        <li class="fila-item atual">
+          <span class="faixa-alvo">
+            <span class="arte">
+              @if (f.capa) {
+                <img class="faixa-capa" [src]="f.capa" alt="" width="36" height="36" />
+              } @else {
+                <span class="faixa-capa vazia" aria-hidden="true">{{ (f.artista || f.titulo).charAt(0) }}</span>
+              }
+              <span class="arte-selo" aria-hidden="true">
+                @if (player.tocando()) {
+                  <span class="arte-medidor">
+                    @for (n of player.niveisCurtos(); track $index) {
+                      <i [style.transform]="'scaleY(' + (0.14 + n * 0.86) + ')'"></i>
+                    }
+                  </span>
+                } @else {
+                  <svg viewBox="0 0 16 16"><rect x="4" y="2.5" width="3" height="11" rx="1"/><rect x="9" y="2.5" width="3" height="11" rx="1"/></svg>
+                }
+              </span>
+            </span>
+            <span class="fila-dados">
+              <span class="fila-titulo">{{ f.titulo }}</span>
+              <span class="fila-artista">{{ f.artista || 'Artista desconhecido' }}</span>
+            </span>
+          </span>
+        </li>
+
+        @if (aSeguir().length) {
+          <li class="fila-grupo">
+            A seguir
+            @if (player.aleatorio()) {
+              <span class="fila-marca-ordem">aleatório</span>
+            }
+          </li>
+        }
+
+        @for (m of aSeguir(); track m.id) {
+          <li class="fila-item">
+            <button type="button" class="faixa-alvo" [disabled]="player.pedindoId() === m.id"
+                    (click)="player.pedirParaTocar(m)">
+              <span class="arte">
+                @if (m.capa) {
+                  <img class="faixa-capa" [src]="m.capa" alt="" loading="lazy" width="36" height="36" />
+                } @else {
+                  <span class="faixa-capa vazia" aria-hidden="true">{{ (m.artista || m.titulo).charAt(0) }}</span>
+                }
+                <span class="arte-selo" aria-hidden="true">
+                  <svg viewBox="0 0 16 16"><path d="M4.5 2.8v10.4a.7.7 0 0 0 1.07.6l8.2-5.2a.7.7 0 0 0 0-1.2L5.57 2.2a.7.7 0 0 0-1.07.6z"/></svg>
+                </span>
+              </span>
+              <span class="fila-dados">
+                <span class="fila-titulo">{{ m.titulo }}</span>
+                <span class="fila-artista">{{ m.artista || 'Artista desconhecido' }}</span>
+              </span>
+            </button>
+          </li>
+        } @empty {
+          <li class="fila-vazia rotulo">Nada depois desta.</li>
+        }
+
+        @if (restantes() > 0) {
+          <li class="fila-resto rotulo">
+            e mais <span class="num">{{ restantes() }}</span> na fila
+          </li>
+        }
+      </ul>
+    </aside>
+  </div>
+}

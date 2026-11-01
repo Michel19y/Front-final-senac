@@ -5,11 +5,12 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { FamiliaService } from '../../../core/services/familia.service';
 import { Dependente } from '../../../core/models/models';
+import { ConfirmacaoComponent } from '../../../shared/confirmacao/confirmacao.component';
 
 @Component({
   selector: 'app-dependentes',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, ConfirmacaoComponent],
   templateUrl: './dependentes.component.html',
   styleUrl: './dependentes.component.scss'
 })
@@ -23,6 +24,9 @@ export class DependentesComponent implements OnInit {
   readonly salvando = signal(false);
   readonly erro = signal<string | null>(null);
   readonly mostrarSenha = signal(false);
+
+  /** Membro aguardando confirmação de remoção; null = diálogo fechado. */
+  readonly aRemover = signal<Dependente | null>(null);
 
   private get responsavelId(): number {
     return this.authService.usuario()?.id ?? 0;
@@ -73,12 +77,22 @@ export class DependentesComponent implements OnInit {
     });
   }
 
+  /** Só abre o diálogo — a remoção de fato acontece em confirmarRemocao(). */
   remover(dependente: Dependente): void {
-    const confirmado = confirm(`Remover ${dependente.nomeUsuario} da família? Essa ação não pode ser desfeita.`);
-    if (!confirmado) {
+    this.aRemover.set(dependente);
+  }
+
+  cancelarRemocao(): void {
+    this.aRemover.set(null);
+  }
+
+  confirmarRemocao(): void {
+    const dependente = this.aRemover();
+    if (!dependente) {
       return;
     }
 
+    this.aRemover.set(null);
     this.erro.set(null);
 
     this.familiaService.removerDependente(this.responsavelId, dependente.id).subscribe({

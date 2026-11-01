@@ -1,6 +1,7 @@
 <div class="pagina-auth">
   @if (!resultado()) {
-    <form class="cartao formulario" (ngSubmit)="cadastrar()">
+    <form class="formulario" (ngSubmit)="cadastrar()">
+      <app-logo class="marca" [tamanho]="56" />
       <h2>Criar conta no Spotifei</h2>
 
       <div class="campo">
@@ -47,7 +48,7 @@
   }
 
   @if (resultado(); as resposta) {
-    <div class="cartao formulario">
+    <div class="formulario">
       <h2>Cadastro realizado</h2>
       <p>{{ resposta.mensagem }}</p>
       <img class="qrcode" [src]="'data:image/png;base64,' + resposta.qrCodeBase64" alt="QR code do autenticador" />

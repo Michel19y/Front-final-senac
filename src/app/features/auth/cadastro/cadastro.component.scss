@@ -2,37 +2,46 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  padding: 1rem;
+  min-height: 100dvh;
+  padding: var(--e-4);
 }
 
 .pagina-auth {
   width: 100%;
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  max-width: 400px;
+}
+
+/* A marca abre o cartao: e a primeira coisa que se ve ao entrar no app. */
+.marca {
+  align-self: center;
+  margin-bottom: var(--e-4);
 }
 
 .formulario {
   display: flex;
   flex-direction: column;
+  background: var(--chassi);
+  border: 1px solid var(--sulco);
+  border-top: 3px solid var(--ambar);
+  border-radius: var(--raio-md);
+  padding: var(--e-8) var(--e-6);
 
   h2 {
-    margin-top: 0;
+    margin: 0 0 var(--e-6);
+    font-size: var(--t-lg);
   }
 
   button {
-    margin-top: 0.5rem;
+    margin-top: var(--e-2);
   }
 }
 
 .mostrar-senha {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  color: var(--cor-texto-suave);
+  gap: var(--e-2);
+  font-size: var(--t-xs);
+  color: var(--suave);
   cursor: pointer;
 
   input {
@@ -41,13 +50,27 @@
 }
 
 .rodape {
-  margin: 1rem 0 0;
-  font-size: 0.85rem;
-  color: var(--cor-texto-suave);
+  margin: var(--e-4) 0 0;
+  font-size: var(--t-sm);
+  color: var(--suave);
   text-align: center;
 
   a {
-    color: var(--cor-destaque);
+    color: var(--ambar);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 150ms ease;
+
+    &:focus-visible {
+      outline: 2px solid var(--ambar);
+      outline-offset: 3px;
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rodape a:hover {
+    border-bottom-color: var(--ambar);
   }
 }
 
@@ -55,8 +78,8 @@
   display: block;
   width: 200px;
   height: 200px;
-  margin: 1rem auto;
+  margin: var(--e-4) auto;
   background: #fff;
-  padding: 0.5rem;
-  border-radius: 8px;
+  padding: var(--e-2);
+  border-radius: var(--raio-sm);
 }

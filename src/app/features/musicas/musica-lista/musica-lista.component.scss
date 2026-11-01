@@ -1,10 +1,240 @@
-.busca {
+.cabecalho {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  max-width: 420px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-4);
+  flex-wrap: wrap;
 
-  input {
-    flex: 1;
+  h2 {
+    margin-bottom: var(--e-4);
   }
 }
+
+/* Link com aparência de ação, mas continua sendo <a>: navega, não submete. */
+.botao-link {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  font-stretch: 88%;
+  color: var(--ambar);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .botao-link:hover {
+    border-bottom-color: var(--ambar);
+  }
+}
+
+.filtros {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  flex-wrap: wrap;
+  max-width: 560px;
+}
+
+.busca {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.so-explicitas {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  font-size: var(--t-sm);
+  color: var(--suave);
+  cursor: pointer;
+  white-space: nowrap;
+
+  &.ativa {
+    color: var(--osso);
+  }
+}
+
+/* Índice A-Z: em 300 faixas é o atalho mais rápido — mais que rolar,
+   mais que digitar. Só entram as letras que têm música. */
+.indice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-1);
+  margin: var(--e-4) 0 var(--e-2);
+  max-width: 560px;
+
+  button {
+    min-width: 1.85rem;
+    padding: var(--e-1) var(--e-2);
+    font-size: var(--t-xs);
+    background: transparent;
+    border-color: var(--sulco);
+    color: var(--suave);
+  }
+
+  button.ativa {
+    border-color: var(--ambar);
+    color: var(--ambar);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .indice button:hover:not(:disabled) {
+    background: var(--chassi-alto);
+    color: var(--osso);
+  }
+}
+
+.contagem {
+  margin: 0 0 var(--e-4);
+}
+
+/* Lista, não tabela: cada faixa é capa + texto + ação. Tabela só faria
+   sentido se houvesse colunas comparáveis entre si. */
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 560px;
+}
+
+.faixa {
+  position: relative;
+  border-bottom: 1px solid #2a2721;
+
+  /* A faixa no player ganha traço âmbar — mesmo sinal da aba ativa. */
+  &.atual {
+    box-shadow: inset 2px 0 0 var(--ambar);
+  }
+}
+
+.vazio {
+  padding: var(--e-6) 0;
+}
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  margin-top: var(--e-6);
+  max-width: 560px;
+}
+
+/* ------------------------------------------------- tocadas recentemente */
+
+/* Trilho horizontal com capa grande. Sai de cena quando há filtro ativo:
+   ali a intenção é procurar, e um carrossel só atrapalharia. */
+.recentes {
+  margin-bottom: var(--e-6);
+}
+
+.recentes-titulo {
+  font-size: var(--t-sm);
+  margin-bottom: var(--e-3);
+}
+
+.recentes-trilho {
+  display: flex;
+  gap: var(--e-3);
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--e-2);
+  overflow-x: auto;
+  /* Cada capa para no lugar: rolagem livre deixa meia capa cortada. */
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
+
+.recentes-trilho li {
+  scroll-snap-align: start;
+}
+
+.recente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-1);
+  width: 6.5rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  text-align: left;
+
+  img,
+  .recente-vazia {
+    width: 6.5rem;
+    height: 6.5rem;
+    border-radius: var(--raio-md);
+    object-fit: cover;
+    background: var(--chassi-alto);
+    transition: outline-color 150ms ease;
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+  }
+
+  .recente-vazia {
+    display: grid;
+    place-items: center;
+    font-size: var(--t-lg);
+    font-weight: 700;
+    font-stretch: 80%;
+    color: var(--suave);
+  }
+
+  /* A que está no player ganha o contorno âmbar, mesmo sinal da lista. */
+  &.atual img,
+  &.atual .recente-vazia {
+    outline-color: var(--ambar);
+  }
+}
+
+.recente-titulo,
+.recente-artista {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.recente-titulo {
+  font-size: var(--t-xs);
+  color: var(--osso);
+}
+
+.recente-artista {
+  font-size: var(--t-xs);
+  color: var(--suave);
+}
+
+/* ------------------------------------------------ cabeçalho de artista */
+
+/* Fica grudado no topo enquanto o grupo passa: em 317 faixas, sem isso
+   você rola e perde a referência de quem está ouvindo. */
+.grupo-cabeca {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-3);
+  padding: var(--e-2) 0;
+  background: var(--fundo);
+  border-bottom: 1px solid var(--sulco);
+  font-size: var(--t-xs);
+  font-stretch: 80%;
+  font-weight: 600;
+  color: var(--ambar);
+
+  span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .num {
+    color: var(--suave);
+    flex-shrink: 0;
+  }
+}
+

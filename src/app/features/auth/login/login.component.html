@@ -1,6 +1,7 @@
 <div class="pagina-auth">
   @if (!configuracao2fa()) {
-    <form class="cartao formulario" (ngSubmit)="entrar()">
+    <form class="formulario" (ngSubmit)="entrar()">
+      <app-logo class="marca" [tamanho]="56" />
       <h2>Entrar no Spotifei</h2>
 
       <div class="campo">
@@ -33,7 +34,7 @@
   }
 
   @if (configuracao2fa(); as config) {
-    <div class="cartao formulario">
+    <div class="formulario">
       <h2>Configure o autenticador</h2>
       <p>{{ config.mensagem }}</p>
       <img class="qrcode" [src]="'data:image/png;base64,' + config.qrCodeBase64" alt="QR code do autenticador" />

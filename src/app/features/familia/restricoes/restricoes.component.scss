@@ -1,48 +1,182 @@
-.voltar {
-  display: inline-block;
-  margin-bottom: 1rem;
-  color: var(--cor-texto-suave);
-  text-decoration: none;
-
-  &:hover {
-    color: var(--cor-texto);
-  }
+:host {
+  display: block;
+  max-width: 560px;
 }
 
-.secao {
-  margin-bottom: 1.5rem;
-  max-width: 560px;
+/* Cada corte é um painel: a tela inteira é uma mesa de cortes, e caixas
+   soltas no fundo não diziam onde um ajuste termina e o outro começa. */
+.painel {
+  background: var(--chassi);
+  border: 1px solid var(--sulco);
+  border-radius: var(--raio-md);
+  padding: var(--e-6);
+  margin-bottom: var(--e-4);
+}
+
+.painel-cabeca {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  margin-bottom: var(--e-2);
 
   h3 {
-    margin-top: 0;
+    margin: 0;
+    font-size: var(--t-base);
   }
 }
 
-.linha {
+/* Estado à direita do título: a cor responde antes da palavra. */
+.selo {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: var(--e-2);
+  flex-shrink: 0;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--suave);
 
-  input {
-    flex: 1;
+  &.cortado {
+    color: var(--sinal);
   }
 }
 
-.resultados-busca {
+.painel .rotulo {
+  margin: 0 0 var(--e-4);
+}
+
+.acao-chave {
+  width: 100%;
+}
+
+/* ------------------------------------------------------------- limite */
+
+.painel-nivel {
+  margin-bottom: var(--e-8);
+}
+
+.aviso-limite {
+  margin: var(--e-3) 0 0;
+  font-size: var(--t-sm);
+  color: var(--sinal);
+}
+
+.definir-limite {
+  display: flex;
+  gap: var(--e-2);
+  margin-top: var(--e-6);
+  padding-top: var(--e-4);
+  border-top: 1px solid var(--sulco);
+}
+
+/* Duas classes para vencer `.linha input` (mesma especificidade, vem
+   depois). A largura do campo é a dica do que se espera dentro dele. */
+.linha.definir-limite input {
+  flex: 0 0 auto;
+  width: 7rem;
+}
+
+/* O LED base é global; aqui ele é vermelho, não âmbar: restrição cortada
+   é bloqueio, não confirmação. */
+.chave-led.cortado {
+  background: var(--sinal);
+  box-shadow: 0 0 0 3px var(--sinal-fraco);
+}
+
+/* ----------------------------------------------------------- artistas */
+
+.busca {
+  width: 100%;
+  margin-bottom: var(--e-3);
+}
+
+.lista-artistas,
+.lista-cortes {
   list-style: none;
-  margin: 0 0 1rem;
+  margin: 0;
   padding: 0;
+}
+
+.lista-artistas {
+  margin-bottom: var(--e-4);
+  max-height: 17rem;
+  overflow-y: auto;
+}
+
+.artista {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  padding: var(--e-2) 0;
+  border-bottom: 1px solid var(--sulco);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+/* Artista não tem capa no catálogo; a inicial dá o mesmo apoio visual que
+   a capa dá na lista de músicas. */
+.artista-inicial {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--chassi-alto);
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--suave);
+}
+
+.artista-dados {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+}
 
-  li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    background: var(--cor-superficie-hover);
-    border-radius: 6px;
-    padding: 0.5rem 0.75rem;
+.artista-nome {
+  font-size: var(--t-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.artista-faixas {
+  font-size: var(--t-xs);
+}
+
+.ja-cortado {
+  flex-shrink: 0;
+  font-size: var(--t-xs);
+  color: var(--sinal);
+}
+
+/* A lista do que está cortado é o estado da conta: fundo próprio para não
+   se confundir com os resultados da busca logo acima. */
+.lista-cortes li {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  padding: var(--e-3);
+  margin-bottom: var(--e-1);
+  border-radius: var(--raio-sm);
+  background: var(--chassi-alto);
+
+  &.vazio {
+    background: transparent;
+    padding: var(--e-3) 0;
   }
+}
+
+.corte-nome {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

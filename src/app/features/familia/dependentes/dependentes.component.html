@@ -1,6 +1,41 @@
-<h2>Spotifei Família</h2>
+<h2>Sua família</h2>
 
-<div class="cartao formulario">
+@if (erro(); as msg) {
+  <p class="erro">{{ msg }}</p>
+}
+
+@if (carregando()) {
+  <p class="rotulo">Carregando membros da família...</p>
+} @else {
+  <div class="canais">
+    @for (dependente of dependentes(); track dependente.id) {
+      <article class="canal">
+        <header class="canal-cabeca">
+          <h3>{{ dependente.nomeUsuario }}</h3>
+          <p class="canal-email">{{ dependente.email }}</p>
+        </header>
+
+        <p class="canal-limite">
+          @if (dependente.limiteDiarioReproducoes; as limite) {
+            <span class="num">{{ limite }}</span> reproduções por dia
+          } @else {
+            Sem limite diário
+          }
+        </p>
+
+        <div class="acoes">
+          <a class="acao" [routerLink]="['/familia', dependente.id, 'restricoes']">Controle parental</a>
+          <a class="acao" [routerLink]="['/familia', dependente.id, 'historico']">Histórico</a>
+          <button type="button" class="perigo" (click)="remover(dependente)">Remover</button>
+        </div>
+      </article>
+    } @empty {
+      <p class="vazio">Ninguém na família ainda. Adicione o primeiro membro abaixo.</p>
+    }
+  </div>
+}
+
+<section class="formulario">
   <h3>Adicionar membro</h3>
   <div class="linha">
     <div class="campo">
@@ -20,32 +55,15 @@
       </label>
     </div>
   </div>
-  <button type="button" (click)="adicionar()" [disabled]="salvando()">{{ salvando() ? 'Adicionando...' : 'Adicionar à família' }}</button>
-</div>
+  <button type="button" class="estavel" (click)="adicionar()" [disabled]="salvando()">
+    {{ salvando() ? 'Adicionando...' : 'Adicionar à família' }}
+  </button>
+</section>
 
-@if (erro(); as msg) {
-  <p class="erro">{{ msg }}</p>
-}
-
-@if (carregando()) {
-  <p>Carregando membros da família...</p>
-} @else {
-  <div class="grade">
-    @for (dependente of dependentes(); track dependente.id) {
-      <div class="cartao membro">
-        <h3>{{ dependente.nomeUsuario }}</h3>
-        <p>{{ dependente.email }}</p>
-        @if (dependente.limiteDiarioReproducoes; as limite) {
-          <p class="limite">Limite diário: {{ limite }}</p>
-        }
-        <div class="acoes">
-          <a [routerLink]="['/familia', dependente.id, 'historico']"><button type="button" class="secundario">Histórico</button></a>
-          <a [routerLink]="['/familia', dependente.id, 'restricoes']"><button type="button" class="secundario">Restrições</button></a>
-          <button type="button" class="perigo" (click)="remover(dependente)">Remover</button>
-        </div>
-      </div>
-    } @empty {
-      <p>Nenhum membro cadastrado ainda.</p>
-    }
-  </div>
-}
+<app-confirmacao
+  [aberto]="aRemover() !== null"
+  titulo="Remover da família?"
+  [mensagem]="aRemover() ? aRemover()!.nomeUsuario + ' perde o acesso e o histórico deixa de ser visível aqui. Não dá para desfazer.' : ''"
+  rotuloConfirmar="Remover"
+  (confirmar)="confirmarRemocao()"
+  (cancelar)="cancelarRemocao()" />

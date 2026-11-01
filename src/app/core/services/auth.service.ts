@@ -14,6 +14,21 @@ export class AuthService {
 
   constructor(private readonly http: HttpClient) {}
 
+  /**
+   * Reflete no app o perfil que acabou de mudar.
+   *
+   * O usuário fica guardado no localStorage desde o login; sem isto o header
+   * continuaria mostrando o nome e a foto antigos até sair e entrar de novo.
+   */
+  atualizarUsuario(usuario: UsuarioLogado): void {
+    this.usuario.set(usuario);
+    try {
+      localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario));
+    } catch {
+      /* modo privado: o app segue com o valor em memória */
+    }
+  }
+
   cadastrar(request: CadastroRequest): Observable<CadastroResponse> {
     return this.http.post<CadastroResponse>(`${this.baseUrl}/cadastro`, request);
   }
@@ -81,7 +96,8 @@ export class AuthService {
       id: resposta.id,
       nomeUsuario: resposta.nomeUsuario,
       email: resposta.email,
-      planoId: resposta.planoId
+      planoId: resposta.planoId,
+      foto: resposta.foto ?? null
     };
     localStorage.setItem(CHAVE_TOKEN, resposta.token);
     localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario));

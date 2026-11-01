@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Forma de onda centrada num eixo. Barras apoiadas na base leriam
+       como grafico de barras; centradas, leem como audio. -->
+  <rect width="64" height="64" rx="15" fill="#e8a33d"/>
+  <g fill="#24221e">
+    <rect x="11" y="26" width="6" height="12" rx="3"/>
+    <rect x="21" y="19" width="6" height="26" rx="3"/>
+    <rect x="31" y="10" width="6" height="44" rx="3"/>
+    <rect x="41" y="22" width="6" height="20" rx="3"/>
+    <rect x="51" y="28" width="6" height="8" rx="3"/>
+  </g>
+</svg>

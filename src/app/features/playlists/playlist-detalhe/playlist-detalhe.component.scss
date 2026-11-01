@@ -1,34 +1,10 @@
-.voltar {
-  display: inline-block;
-  margin-bottom: 1rem;
-  color: var(--cor-texto-suave);
-  text-decoration: none;
-
-  &:hover {
-    color: var(--cor-texto);
-  }
-}
-
-.adicionar-secao {
-  margin-top: 1.5rem;
-
-  h3 {
-    margin-top: 0;
-  }
-
-  input {
-    width: 100%;
-    max-width: 320px;
-    margin-bottom: 1rem;
-  }
-}
-
 .titulo {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--e-3);
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: var(--e-3);
+  max-width: 560px;
 
   h2 {
     margin: 0;
@@ -36,17 +12,81 @@
 
   input {
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
     max-width: 320px;
   }
 }
 
-.acoes {
-  display: flex;
-  gap: 0.5rem;
+.contagem {
+  margin: 0 0 var(--e-4);
+}
 
-  button {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
+/* Mesma linha de Músicas: capa, título com artista embaixo, ação à direita.
+   Tabela não servia — não há colunas comparáveis entre si. */
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 560px;
+}
+
+.faixa {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  padding-right: var(--e-3);
+  border-bottom: 1px solid #2a2721;
+
+  &.atual {
+    box-shadow: inset 2px 0 0 var(--ambar);
   }
+
+  /* O alvo de tocar ocupa o que sobra; "Tirar" fica no canto. */
+  .faixa-alvo {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Botão de tirar: discreto até o hover, para não competir com a
+   linha inteira, que agora é o alvo de tocar. */
+.faixa > .perigo {
+  flex-shrink: 0;
+  padding: var(--e-1) var(--e-3);
+  white-space: nowrap;
+}
+
+/* A lista de baixo é de escolher, não de tocar: segue linha comum. */
+.adicionar-secao .faixa {
+  gap: var(--e-3);
+  padding: var(--e-2) 0;
+}
+
+.vazio {
+  padding: var(--e-6) 0;
+}
+
+.adicionar-secao {
+  margin-top: var(--e-8);
+  padding-top: var(--e-6);
+  border-top: 1px solid var(--sulco);
+  max-width: 560px;
+
+  h3 {
+    margin-top: 0;
+  }
+}
+
+.busca {
+  width: 100%;
+  margin-bottom: var(--e-4);
+}
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  margin-top: var(--e-6);
 }
